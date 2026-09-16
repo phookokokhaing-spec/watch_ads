@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Play Pauk Rewards</title>
+    <title>Nova Pay Rewards</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=Padauk:wght@400;700&display=swap" rel="stylesheet" />
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -423,7 +423,7 @@ th { background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(99, 102,
 
     <div id="splash">
         <div class="logo-wrap">
-            <div class="logo">𝙋𝙇𝘼𝙔 𝙋𝘼𝙐𝙆</div>
+            <div class="logo">𝙉𝙤𝙫𝙖 𝙋𝙖𝙮</div>
             <div class="tagline">REWARDS</div>
         </div>
         <div class="loader"></div>
@@ -452,7 +452,7 @@ th { background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(99, 102,
         <div class="auth-box">
             <div class="brand">
                 <span class="emoji">🎰</span>
-                <h1>PLAY PAUK REWARDS</h1>
+                <h1>𝙉𝙤𝙫𝙖 𝙋𝙖𝙮 REWARDS</h1>
                 <p>Watch ads & earn coins</p>
             </div>
             <div id="authError" class="error-msg"></div>
@@ -866,15 +866,16 @@ th { background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(99, 102,
         // ============================================================
         //  FIREBASE
         // ============================================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyC4LfmZL-_AicVGkaHEVnbwdlCtsJGKmBk",
-            authDomain: "play-pauk.firebaseapp.com",
-            projectId: "play-pauk",
-            storageBucket: "play-pauk.firebasestorage.app",
-            messagingSenderId: "1071661436309",
-            appId: "1:1071661436309:web:c3e568e114711649c63a9c",
-            measurementId: "G-VW1MD3JRD6"
-        };
+    
+       const firebaseConfig = {
+        apiKey: "AIzaSyCObNT34Y2ZQF1Uncgq8OHB8ab9GQ4ejME",
+        authDomain: "watching-30fbd.firebaseapp.com",
+        projectId: "watching-30fbd",
+        storageBucket: "watching-30fbd.firebasestorage.app",
+        messagingSenderId: "806942164631",
+        appId: "1:806942164631:web:4bfd602ab9d750befb4bd2",
+        measurementId: "G-HB1TBD2T74"
+      };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
