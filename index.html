@@ -1,0 +1,2450 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Play Pauk Rewards</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=Padauk:wght@400;700&display=swap" rel="stylesheet" />
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+:root {
+    --bg-0: #08080f; --bg-1: #0f0f1a; --bg-2: #16162a;
+    --glass: rgba(30, 30, 55, 0.6); --glass-border: rgba(255, 255, 255, 0.08);
+    --neon-1: #a855f7; --neon-2: #6366f1; --neon-3: #22d3ee; --neon-4: #f472b6;
+    --gold-1: #fbbf24; --gold-2: #f59e0b;
+    --green: #22c55e; --red: #ef4444;
+    --text-1: #ffffff; --text-2: rgba(255, 255, 255, 0.7); --text-3: rgba(255, 255, 255, 0.4);
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.55);
+    --glow-purple: 0 0 40px rgba(168, 85, 247, 0.4);
+    --glow-gold: 0 0 40px rgba(251, 191, 36, 0.5);
+    --r-sm: 12px; --r-md: 18px; --r-lg: 24px; --r-xl: 32px; --r-full: 999px;
+    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --bounce: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.light-mode {
+    --bg-0: #f5f5fa; --bg-1: #ffffff; --bg-2: #f0f0f8;
+    --glass: rgba(255, 255, 255, 0.75); --glass-border: rgba(0, 0, 0, 0.06);
+    --text-1: #0a0a1a; --text-2: rgba(10, 10, 26, 0.7); --text-3: rgba(10, 10, 26, 0.4);
+}
+html, body { height: 100%; height: 100dvh; overflow: hidden; font-family: 'Inter', 'Padauk', -apple-system, sans-serif; }
+body { background: var(--bg-0); color: var(--text-1); display: flex; flex-direction: column; position: relative; overscroll-behavior: none; }
+.bg-layer { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.bg-layer .orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.35; animation: orbFloat 18s ease-in-out infinite; }
+.bg-layer .orb-1 { width: 340px; height: 340px; background: radial-gradient(circle, var(--neon-1), transparent 70%); top: -100px; left: -100px; }
+.bg-layer .orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, var(--neon-3), transparent 70%); bottom: -150px; right: -150px; animation-delay: -6s; }
+.bg-layer .orb-3 { width: 260px; height: 260px; background: radial-gradient(circle, var(--neon-4), transparent 70%); top: 40%; left: 60%; animation-delay: -12s; opacity: 0.2; }
+@keyframes orbFloat { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(50px, -40px) scale(1.15); } 66% { transform: translate(-30px, 30px) scale(0.9); } }
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-thumb { background: linear-gradient(var(--neon-1), var(--neon-3)); border-radius: 10px; }
+#splash { position: fixed; inset: 0; z-index: 9999; background: radial-gradient(circle at 50% 50%, #1a0b2e 0%, #08080f 70%); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s, transform 0.8s; }
+#splash.hide { opacity: 0; transform: scale(1.15); pointer-events: none; }
+#splash .logo { font-size: 52px; font-weight: 900; letter-spacing: -2px; background: linear-gradient(135deg, #fff, var(--neon-1) 40%, var(--neon-3) 70%, var(--gold-1)); background-size: 200% 200%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s linear infinite; filter: drop-shadow(0 0 40px rgba(168, 85, 247, 0.6)); }
+@keyframes shine { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+#splash .tagline { margin-top: 8px; font-size: 11px; color: var(--text-3); letter-spacing: 4px; text-transform: uppercase; }
+#splash .loader { position: relative; margin-top: 40px; width: 60px; height: 60px; }
+#splash .loader::before, #splash .loader::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid transparent; border-top-color: var(--neon-1); animation: spin 1s linear infinite; }
+#splash .loader::after { inset: 10px; border-top-color: var(--neon-3); animation-duration: 1.5s; animation-direction: reverse; }
+@keyframes spin { to { transform: rotate(360deg); } }
+#authScreen { display: none; flex: 1; align-items: center; justify-content: center; padding: 20px; min-height: 0; position: relative; z-index: 1; }
+#authScreen.active { display: flex; }
+.auth-box { background: var(--glass); backdrop-filter: blur(30px); border-radius: var(--r-xl); padding: 36px 24px; width: 100%; max-width: 400px; border: 1px solid var(--glass-border); box-shadow: var(--shadow-lg), var(--glow-purple); animation: slideUp 0.6s var(--bounce); }
+@keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+.auth-box .brand { text-align: center; margin-bottom: 28px; }
+.auth-box .brand .emoji { font-size: 40px; margin-bottom: 8px; display: block; }
+.auth-box .brand h1 { font-size: 22px; font-weight: 900; background: linear-gradient(135deg, var(--text-1), var(--neon-1)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.auth-box .brand p { font-size: 12px; color: var(--text-2); margin-top: 6px; }
+.auth-box .form-group { margin-bottom: 14px; }
+.auth-box .form-group label { display: block; font-size: 10px; font-weight: 700; color: var(--text-2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1.5px; }
+.auth-box .form-group input { width: 100%; padding: 13px 16px; border-radius: var(--r-sm); border: 1px solid var(--glass-border); background: rgba(0, 0, 0, 0.25); color: var(--text-1); font-size: 14px; outline: none; }
+.auth-box .form-group input:focus { border-color: var(--neon-1); box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.15); }
+.auth-box .btn { width: 100%; padding: 14px; border: none; border-radius: var(--r-sm); font-weight: 800; font-size: 14px; cursor: pointer; background: linear-gradient(135deg, var(--neon-1), var(--neon-2)); color: #fff; box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4); }
+.auth-box .btn:active { transform: scale(0.98); }
+.auth-box .toggle-link { text-align: center; margin-top: 18px; font-size: 13px; color: var(--text-2); cursor: pointer; }
+.auth-box .toggle-link span { color: var(--neon-1); font-weight: 700; }
+.auth-box .error-msg { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--r-sm); padding: 10px 14px; font-size: 13px; color: #fca5a5; margin-bottom: 14px; display: none; }
+.auth-box .error-msg.show { display: block; }
+#appContainer { display: none; flex: 1; flex-direction: column; min-height: 0; height: 100%; position: relative; z-index: 1; padding: 8px 10px 0; overflow-y: auto; }
+#appContainer.active { display: flex; }
+.app-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; flex-shrink: 0; }
+.user-chip { display: flex; align-items: center; gap: 10px; background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); padding: 6px 14px 6px 6px; border-radius: var(--r-full); cursor: pointer; flex: 1; min-width: 0; }
+.user-chip .avatar { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--neon-1); object-fit: cover; }
+.user-chip .info { display: flex; flex-direction: column; min-width: 0; }
+.user-chip .name { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-chip .status { font-size: 10px; color: var(--green); display: flex; align-items: center; gap: 4px; }
+.user-chip .status::before { content: ''; width: 6px; height: 6px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); }
+.header-actions { display: flex; gap: 6px; }
+.hd-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); color: var(--text-2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; position: relative; }
+.hd-btn:active { transform: scale(0.95); }
+.coin-hero { display: flex; align-items: center; gap: 12px; background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.08)); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: var(--r-md); padding: 12px 16px; margin-bottom: 12px; position: relative; overflow: hidden; box-shadow: var(--shadow-sm), var(--glow-gold); }
+.coin-hero::before { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.2), transparent); animation: shineSweep 4s infinite; }
+@keyframes shineSweep { 0% { left: -100%; } 50%, 100% { left: 200%; } }
+.coin-hero .coin-icon { font-size: 28px; filter: drop-shadow(0 0 12px var(--gold-1)); animation: coinSpin 3s ease-in-out infinite; }
+@keyframes coinSpin { 0%, 100% { transform: rotateY(0deg); } 50% { transform: rotateY(180deg) scale(1.15); } }
+.coin-hero .coin-info { flex: 1; }
+.coin-hero .coin-label { font-size: 10px; color: rgba(251, 191, 36, 0.8); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+.coin-hero .coin-value { font-size: 24px; font-weight: 900; background: linear-gradient(135deg, #fff, var(--gold-1)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-variant-numeric: tabular-nums; }
+.coin-hero .usdt-info { text-align: right; }
+.coin-hero .usdt-info .label { font-size: 9px; color: var(--text-3); text-transform: uppercase; font-weight: 700; }
+.coin-hero .usdt-info .value { font-size: 15px; font-weight: 800; color: var(--green); }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 0 4px; margin-top: 14px; }
+.section-header h3 { font-size: 14px; font-weight: 800; background: linear-gradient(135deg, var(--text-1), var(--neon-1)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; display: flex; align-items: center; gap: 8px; }
+.ad-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+.ad-card { background: linear-gradient(145deg, rgba(40, 40, 70, 0.9), rgba(25, 25, 45, 0.95)); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: var(--r-md); padding: 14px 12px; text-align: center; box-shadow: var(--shadow-md); position: relative; overflow: hidden; transition: all 0.3s ease; }
+.ad-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--neon-1), var(--neon-3)); opacity: 0.6; }
+.ad-card.available { border-color: rgba(34, 197, 94, 0.5); }
+.ad-card.available::before { background: linear-gradient(90deg, var(--green), #4ade80); opacity: 1; }
+.ad-card.cooldown { opacity: 0.65; border-color: rgba(255, 255, 255, 0.1); }
+.ad-card.cooldown::before { background: linear-gradient(90deg, var(--gold-1), var(--gold-2)); opacity: 0.5; }
+.ad-card-icon { font-size: 34px; display: block; margin-bottom: 8px; filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.5)); }
+.ad-card-title { font-size: 12px; font-weight: 800; color: var(--text-1); margin-bottom: 4px; }
+.ad-card-reward { display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 10px; }
+.reward-amount-big { font-size: 20px; font-weight: 900; background: linear-gradient(135deg, #fff, var(--gold-1)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.reward-text { font-size: 10px; color: var(--gold-1); font-weight: 700; }
+.ad-action-btn { width: 100%; padding: 10px; border: none; border-radius: var(--r-sm); font-weight: 800; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
+.ad-action-btn.watch { background: linear-gradient(135deg, var(--gold-1), var(--gold-2)); color: #1a1a2e; box-shadow: 0 4px 0 rgba(150, 90, 0, 0.4); }
+.ad-action-btn.download { background: linear-gradient(135deg, var(--neon-1), var(--neon-2)); color: #fff; box-shadow: 0 4px 0 rgba(60, 20, 100, 0.4); }
+.ad-action-btn:active { transform: translateY(3px); box-shadow: none; }
+.ad-action-btn:disabled { background: rgba(100, 100, 100, 0.3); color: var(--text-3); box-shadow: none; cursor: not-allowed; }
+.ad-cooldown-text { font-size: 10px; color: var(--gold-1); font-weight: 700; margin-top: 4px; min-height: 14px; }
+.bonus-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--r-md); padding: 16px; display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.bonus-icon { font-size: 40px; flex-shrink: 0; filter: drop-shadow(0 0 15px var(--gold-1)); }
+.bonus-info { flex: 1; min-width: 0; }
+.bonus-title { font-size: 14px; font-weight: 800; color: var(--text-1); margin-bottom: 4px; }
+.bonus-desc { font-size: 11px; color: var(--text-2); margin-bottom: 8px; }
+.bonus-claim-btn { padding: 8px 18px; border: none; border-radius: var(--r-full); background: linear-gradient(135deg, var(--gold-1), var(--gold-2)); color: #1a1a2e; font-weight: 900; font-size: 12px; cursor: pointer; box-shadow: 0 4px 0 rgba(150, 90, 0, 0.4); }
+.bonus-claim-btn:active { transform: translateY(3px); box-shadow: none; }
+.bonus-claim-btn:disabled { background: rgba(100, 100, 100, 0.3); color: var(--text-3); cursor: not-allowed; box-shadow: none; }
+.bonus-cooldown-text { font-size: 10px; color: var(--gold-1); font-weight: 700; margin-top: 6px; }
+.dashboard-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--r-lg); padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow-md); }
+.dashboard-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.dashboard-title { font-size: 13px; font-weight: 800; color: var(--text-1); display: flex; align-items: center; gap: 8px; }
+.dashboard-title i { color: var(--gold-1); }
+.dashboard-refresh { width: 32px; height: 32px; border-radius: 50%; background: var(--glass); border: 1px solid var(--glass-border); color: var(--text-2); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.dashboard-refresh:active { transform: rotate(180deg); }
+.top-viewer-card { background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.08)); border: 1px solid rgba(251, 191, 36, 0.4); border-radius: var(--r-md); padding: 14px; margin-bottom: 10px; min-height: 80px; display: flex; flex-direction: column; justify-content: center; }
+.top-viewer-content { display: flex; align-items: center; gap: 12px; width: 100%; }
+.top-viewer-rank { font-size: 32px; }
+.top-viewer-info { flex: 1; min-width: 0; }
+.top-viewer-name { font-size: 14px; font-weight: 800; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top-viewer-count { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+.top-viewer-badge { background: linear-gradient(135deg, var(--gold-1), var(--gold-2)); color: #1a1a2e; padding: 4px 10px; border-radius: var(--r-full); font-size: 10px; font-weight: 900; }
+.top-loading { text-align: center; color: var(--text-3); font-size: 12px; padding: 10px; }
+.top-loading i { color: var(--neon-1); margin-right: 6px; }
+.dashboard-divider { border-top: 1px solid var(--glass-border); margin: 12px 0; }
+.dashboard-subtitle { font-size: 11px; font-weight: 700; color: var(--text-2); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.dashboard-subtitle i { color: var(--neon-3); }
+.ad-history-list { max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+.history-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: rgba(0, 0, 0, 0.25); border-radius: 10px; border: 1px solid var(--glass-border); font-size: 11px; gap: 8px; }
+.history-row.rank-1 { background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.08)); border-color: rgba(251, 191, 36, 0.4); }
+.history-row .h-rank { font-weight: 900; color: var(--text-3); width: 26px; text-align: center; flex-shrink: 0; }
+.history-row.rank-1 .h-rank { color: var(--gold-1); font-size: 14px; }
+.history-row .h-name { flex: 1; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-1); }
+.history-row .h-count { background: linear-gradient(135deg, var(--neon-1), var(--neon-2)); color: #fff; padding: 3px 10px; border-radius: var(--r-full); font-weight: 800; font-size: 10px; flex-shrink: 0; }
+.history-row.rank-1 .h-count { background: linear-gradient(135deg, var(--gold-1), var(--gold-2)); color: #1a1a2e; }
+.top-bonus-progress { width: 100%; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(251, 191, 36, 0.3); }
+.progress-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 11px; font-weight: 700; }
+.progress-label-row .label-left { color: var(--text-2); }
+.progress-label-row .label-right { color: var(--gold-1); font-weight: 900; }
+.progress-bar-bg { width: 100%; height: 14px; background: rgba(0, 0, 0, 0.4); border-radius: 10px; overflow: hidden; border: 1px solid var(--glass-border); position: relative; }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--neon-1), var(--gold-1), var(--gold-2)); border-radius: 10px; width: 0%; transition: width 0.5s ease; position: relative; box-shadow: 0 0 15px rgba(251, 191, 36, 0.6); }
+.progress-bar-fill::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%; background: linear-gradient(180deg, rgba(255,255,255,0.4), transparent); border-radius: 10px 10px 0 0; }
+.progress-bar-fill.complete { background: linear-gradient(90deg, var(--green), #4ade80); box-shadow: 0 0 20px rgba(34, 197, 94, 0.8); }
+.progress-stats-row { display: flex; justify-content: space-between; margin-top: 8px; font-size: 10px; color: var(--text-3); font-weight: 700; }
+.claim-bonus-btn { width: 100%; padding: 12px; border: none; border-radius: var(--r-md); background: linear-gradient(135deg, var(--gold-1), var(--gold-2)); color: #1a1a2e; font-weight: 900; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 0 rgba(150, 90, 0, 0.4); animation: claimPulse 1.5s infinite; margin-top: 10px; }
+@keyframes claimPulse { 0%, 100% { box-shadow: 0 4px 0 rgba(150, 90, 0, 0.4), 0 8px 20px rgba(251, 191, 36, 0.5); } 50% { box-shadow: 0 4px 0 rgba(150, 90, 0, 0.4), 0 8px 32px rgba(251, 191, 36, 0.9); } }
+.claim-bonus-btn:active { transform: translateY(2px); }
+.claim-bonus-btn.locked { background: rgba(100, 100, 100, 0.3); color: var(--text-3); cursor: not-allowed; box-shadow: none; animation: none; }
+.exchange-locked-notice { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; padding: 12px; text-align: center; font-size: 12px; color: #fca5a5; font-weight: 700; margin-bottom: 12px; display: none; }
+.exchange-locked-notice.show { display: block; }
+.market-card .value.cyan { background: linear-gradient(135deg, var(--neon-3), var(--neon-2)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.bottom-nav { display: flex; justify-content: space-around; align-items: center; background: var(--glass); backdrop-filter: blur(30px); border-top: 1px solid var(--glass-border); border-radius: var(--r-xl) var(--r-xl) 0 0; padding: 8px 6px calc(10px + env(safe-area-inset-bottom)); flex-shrink: 0; min-height: 64px; margin: 0 -10px; padding-left: 10px; padding-right: 10px; box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.4); position: sticky; bottom: 0; margin-top: 14px; }
+.bottom-nav::before { content: ''; position: absolute; top: 0; left: 15%; right: 15%; height: 2px; background: linear-gradient(90deg, transparent, var(--neon-1), var(--neon-3), transparent); border-radius: 2px; }
+.nav-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 12px; border-radius: var(--r-sm); color: var(--text-3); font-size: 9px; font-weight: 700; cursor: pointer; background: none; border: none; min-width: 52px; position: relative; }
+.nav-btn i { font-size: 19px; }
+.nav-btn:active { transform: scale(0.95); }
+.nav-btn.active { color: var(--neon-1); }
+.nav-btn.active i { filter: drop-shadow(0 0 15px var(--neon-1)); transform: scale(1.1); }
+.nav-btn.active::after { content: ''; position: absolute; bottom: -2px; width: 20px; height: 3px; background: linear-gradient(90deg, var(--neon-1), var(--neon-3)); border-radius: 4px; box-shadow: 0 0 12px var(--neon-1); }
+#coinAnimationOverlay { position: fixed; inset: 0; z-index: 9998; display: none; justify-content: center; align-items: center; overflow: hidden; background: radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.2), rgba(0,0,0,0.85)); backdrop-filter: blur(8px); }
+#coinAnimationOverlay.show { display: flex; animation: overlayFadeIn 0.4s ease; }
+@keyframes overlayFadeIn { from { opacity: 0; } to { opacity: 1; } }
+#coinAnimationOverlay.shake { animation: screenShake 0.6s ease-in-out; }
+@keyframes screenShake { 0%, 100% { transform: translate(0, 0); } 10%, 30%, 50%, 70%, 90% { transform: translate(-3px, 2px); } 20%, 40%, 60%, 80% { transform: translate(3px, -2px); } }
+.burst-ring { position: absolute; border-radius: 50%; border: 3px solid var(--gold-1); opacity: 0; animation: burstExpand 1.8s ease-out; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.burst-ring:nth-child(1) { animation-delay: 0s; }
+.burst-ring:nth-child(2) { animation-delay: 0.15s; border-color: var(--neon-1); }
+.burst-ring:nth-child(3) { animation-delay: 0.3s; }
+.burst-ring:nth-child(4) { animation-delay: 0.45s; border-color: var(--neon-3); }
+.burst-ring:nth-child(5) { animation-delay: 0.6s; border-color: var(--neon-4); }
+.burst-ring:nth-child(6) { animation-delay: 0.75s; }
+@keyframes burstExpand { 0% { width: 0; height: 0; opacity: 1; border-width: 6px; } 100% { width: 500px; height: 500px; opacity: 0; border-width: 1px; } }
+.coin-particle { position: absolute; width: 32px; height: 32px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff7c4, var(--gold-1) 50%, var(--gold-2)); box-shadow: 0 0 20px var(--gold-1), 0 0 40px var(--gold-2); display: flex; align-items: center; justify-content: center; font-size: 16px; animation: coinFall 2.5s cubic-bezier(0.34, 0.5, 0.64, 1) forwards; top: -60px; }
+@keyframes coinFall { 0% { top: -60px; opacity: 0; transform: rotate(0deg) scale(0.3); } 15% { opacity: 1; transform: rotate(180deg) scale(1.2); } 85% { opacity: 1; } 100% { top: 110vh; opacity: 0; transform: rotate(900deg) scale(0.5); } }
+.sparkle { position: absolute; font-size: 20px; animation: sparkleFly 2s ease-out forwards; opacity: 0; }
+@keyframes sparkleFly { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); } 20% { opacity: 1; transform: translate(-50%, -50%) scale(1.3) rotate(180deg); } 100% { opacity: 0; transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.2) rotate(720deg); } }
+.confetti { position: absolute; width: 12px; height: 12px; top: 50%; left: 50%; opacity: 0; animation: confettiBurst 1.8s ease-out forwards; }
+@keyframes confettiBurst { 0% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.3); } }
+.reward-card { position: relative; z-index: 10; background: linear-gradient(145deg, rgba(30, 30, 55, 0.98), rgba(20, 20, 40, 1)); backdrop-filter: blur(40px); border: 3px solid transparent; background-clip: padding-box; border-radius: var(--r-xl); padding: 36px 44px; text-align: center; box-shadow: 0 0 80px rgba(251, 191, 36, 0.8), 0 0 160px rgba(168, 85, 247, 0.5); animation: rewardCardIn 0.8s var(--bounce); max-width: 320px; overflow: hidden; }
+.reward-card::before { content: ''; position: absolute; inset: -3px; background: linear-gradient(45deg, var(--gold-1), var(--neon-1), var(--neon-3), var(--neon-4), var(--gold-1)); background-size: 400% 400%; border-radius: var(--r-xl); z-index: -1; animation: rainbowBorder 3s linear infinite; }
+@keyframes rainbowBorder { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+@keyframes rewardCardIn { 0% { opacity: 0; transform: scale(0.2) rotate(-25deg); } 60% { transform: scale(1.15) rotate(5deg); } 100% { opacity: 1; transform: scale(1) rotate(0deg); } }
+.reward-coin-icon { font-size: 88px; line-height: 1; display: block; margin-bottom: 14px; animation: coinBounce 1s infinite ease-in-out; filter: drop-shadow(0 0 40px var(--gold-1)); }
+@keyframes coinBounce { 0%, 100% { transform: translateY(0) rotate(-8deg); } 50% { transform: translateY(-15px) rotate(8deg) scale(1.08); } }
+.reward-label { font-size: 13px; color: var(--gold-1); text-transform: uppercase; letter-spacing: 4px; font-weight: 900; margin-bottom: 10px; text-shadow: 0 0 25px var(--gold-1); }
+.reward-amount-big { font-size: 68px; font-weight: 900; background: linear-gradient(180deg, #fff 0%, var(--gold-1) 50%, var(--gold-2) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -4px; margin-bottom: 8px; }
+.reward-amount-big .plus { font-size: 40px; vertical-align: top; color: var(--gold-1); -webkit-text-fill-color: var(--gold-1); }
+.reward-sub { font-size: 14px; color: var(--text-2); margin-top: 6px; }
+.reward-total { margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(251, 191, 36, 0.3); font-size: 13px; color: var(--text-2); }
+.reward-total strong { color: var(--gold-1); font-size: 20px; font-weight: 900; margin-left: 6px; }
+.modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(16px); display: none; justify-content: center; align-items: flex-end; z-index: 1000; }
+.modal.show { display: flex; }
+.modal-content { background: var(--bg-1); background-image: linear-gradient(180deg, var(--bg-2), var(--bg-1)); border-radius: var(--r-xl) var(--r-xl) 0 0; padding: 12px 20px 28px; width: 100%; max-width: 500px; max-height: 88vh; overflow-y: auto; position: relative; border-top: 1px solid var(--glass-border); box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.6); animation: sheetUp 0.4s var(--bounce); padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
+@keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-content::before { content: ''; display: block; width: 40px; height: 4px; border-radius: 4px; background: var(--text-3); margin: 0 auto 16px; opacity: 0.5; }
+.modal-content .close { position: absolute; top: 18px; right: 18px; width: 32px; height: 32px; border-radius: 50%; background: var(--glass); border: 1px solid var(--glass-border); color: var(--text-2); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.modal-content h3 { font-size: 18px; font-weight: 800; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
+.modal-content h3 i { width: 36px; height: 36px; border-radius: 12px; background: linear-gradient(135deg, var(--neon-1), var(--neon-2)); display: flex; align-items: center; justify-content: center; font-size: 15px; color: #fff; }
+.modal-content label { font-size: 10px; font-weight: 700; color: var(--text-2); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1.2px; }
+.modal-content input, .modal-content select, .modal-content textarea { width: 100%; padding: 12px 14px; border-radius: var(--r-sm); border: 1px solid var(--glass-border); background: rgba(0, 0, 0, 0.3); color: var(--text-1); font-size: 13px; outline: none; margin-bottom: 12px; font-family: inherit; }
+.modal-content input:focus { border-color: var(--neon-1); box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.12); }
+.modal-content .btn { width: 100%; padding: 13px; border: none; border-radius: var(--r-sm); font-weight: 800; font-size: 14px; cursor: pointer; background: linear-gradient(135deg, var(--neon-1), var(--neon-2)); color: #fff; box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4); }
+.modal-content .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.modal-content .btn-success { background: linear-gradient(135deg, var(--green), #16a34a); }
+.modal-content .btn-outline { background: transparent; border: 1px solid var(--glass-border); color: var(--text-1); box-shadow: none; }
+.modal-content .btn-gold { background: linear-gradient(135deg, var(--gold-1), var(--gold-2)); color: #1a1a2e; }
+.modal-content .divider { border: none; border-top: 1px solid var(--glass-border); margin: 18px 0; }
+.profile-pic { text-align: center; margin-bottom: 20px; }
+.profile-pic img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--neon-1); box-shadow: 0 0 30px rgba(168, 85, 247, 0.5); }
+.profile-pic input { display: block; margin: 10px auto 0; width: auto; font-size: 11px; padding: 6px 12px; border-radius: var(--r-full); }
+.stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+.stat-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--r-md); padding: 14px; text-align: center; }
+.stat-card .s-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; font-weight: 700; margin-bottom: 6px; }
+.stat-card .s-value { font-size: 22px; font-weight: 900; }
+.stat-card.coin .s-value { color: var(--gold-1); }
+.stat-card.usdt .s-value { color: var(--green); }
+.admin-section { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--r-md); padding: 14px; margin-bottom: 12px; }
+.admin-section h4 { font-size: 13px; color: var(--neon-1); margin-bottom: 10px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+.admin-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.admin-row input { flex: 1; min-width: 70px; margin-bottom: 0; }
+.btn-sm { padding: 9px 16px; font-size: 11px; border: none; border-radius: var(--r-sm); font-weight: 800; cursor: pointer; white-space: nowrap; }
+.btn-sm.green { background: linear-gradient(135deg, var(--green), #16a34a); color: #fff; }
+.btn-sm.red { background: linear-gradient(135deg, var(--red), #b91c1c); color: #fff; }
+.btn-sm.warning { background: linear-gradient(135deg, var(--gold-1), var(--gold-2)); color: #1a1a2e; }
+.btn-sm.gold { background: linear-gradient(135deg, var(--gold-1), var(--gold-2)); color: #1a1a2e; }
+table { width: 100%; border-collapse: collapse; font-size: 11px; }
+th, td { padding: 9px 10px; text-align: center; border-bottom: 1px solid var(--glass-border); }
+th { background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(99, 102, 241, 0.1)); color: var(--neon-1); font-weight: 800; font-size: 9px; text-transform: uppercase; }
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-30px); background: var(--glass); backdrop-filter: blur(30px); padding: 12px 24px; border-radius: var(--r-full); font-weight: 700; font-size: 13px; border: 1px solid var(--glass-border); box-shadow: var(--shadow-lg); z-index: 10000; display: none; opacity: 0; transition: all 0.4s var(--bounce); max-width: 90vw; text-align: center; }
+.toast.show { display: block; opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.success { border-color: var(--green); }
+.toast.error { border-color: var(--red); }
+.toast.warning { border-color: var(--gold-1); }
+.exchange-quick { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.exchange-quick button { padding: 7px 16px; border-radius: var(--r-full); border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-2); font-size: 11px; font-weight: 700; cursor: pointer; }
+.exchange-result { background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(34, 211, 238, 0.1)); border-radius: var(--r-md); padding: 16px; text-align: center; font-size: 14px; font-weight: 800; margin: 12px 0; border: 1px solid rgba(168, 85, 247, 0.3); }
+.market-card { background: var(--glass); border-radius: var(--r-md); padding: 16px; margin-bottom: 12px; border: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; }
+.market-card .label { font-size: 11px; color: var(--text-2); font-weight: 700; }
+.market-card .value { font-size: 20px; font-weight: 900; }
+.market-card .value.gold { background: linear-gradient(135deg, var(--gold-1), var(--gold-2)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.market-card .value.green { background: linear-gradient(135deg, var(--green), #4ade80); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.transaction-item { background: var(--glass); border-radius: var(--r-md); padding: 12px 16px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--glass-border); }
+.transaction-item .left { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.transaction-item .left .type { font-size: 13px; font-weight: 700; }
+.transaction-item .left .detail { font-size: 11px; color: var(--text-2); }
+.transaction-item .left .date { font-size: 10px; color: var(--text-3); }
+.transaction-item .right { font-size: 16px; font-weight: 900; }
+.transaction-item .right.positive { color: var(--green); }
+.transaction-item .right.negative { color: var(--red); }
+#localModeIndicator { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--neon-1), var(--neon-2)); color: #fff; padding: 7px 18px; border-radius: var(--r-full); font-size: 10px; font-weight: 800; z-index: 999; opacity: 0; transition: opacity 0.5s; pointer-events: none; white-space: nowrap; }
+#localModeIndicator.show { opacity: 0.95; }
+#adModal .modal-content { padding: 0; max-width: 100%; height: 92vh; max-height: 92vh; display: flex; flex-direction: column; border-radius: var(--r-xl) var(--r-xl) 0 0; overflow: hidden; }
+#adModal .ad-header { padding: 12px 16px; background: var(--bg-2); border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+#adModal .ad-header h3 { margin: 0; font-size: 13px; color: var(--neon-1); display: flex; align-items: center; gap: 6px; }
+#adModal .ad-close-btn { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; font-size: 18px; cursor: pointer; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; }
+#adModal .ad-close-btn:active { transform: scale(0.9); background: rgba(239,68,68,0.3); }
+#adModal .ad-progress-wrap { padding: 8px 16px; background: var(--bg-2); flex-shrink: 0; }
+#adModal .ad-progress-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden; }
+#adModal .ad-progress-fill { height: 100%; background: linear-gradient(90deg,var(--neon-1),var(--neon-3)); width: 0%; border-radius: 6px; transition: width 0.3s; box-shadow: 0 0 12px var(--neon-1); }
+#adModal .ad-iframe-wrap { flex: 1; position: relative; overflow: hidden; background: #000; min-height: 200px; display: flex; align-items: center; justify-content: center; }
+#adModal .ad-timer-big { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); color: var(--neon-1); font-size: 32px; font-weight: 900; padding: 6px 16px; border-radius: var(--r-full); font-variant-numeric: tabular-nums; border: 1px solid rgba(168,85,247,0.4); box-shadow: 0 0 20px rgba(168,85,247,0.5); z-index: 3; }
+#adModal .ad-footer { padding: 12px 16px; background: var(--bg-2); border-top: 1px solid var(--glass-border); flex-shrink: 0; }
+#adModal .ad-claim-btn { width: 100%; padding: 14px; border: none; border-radius: 12px; background: var(--glass); color: var(--text-2); font-weight: 800; font-size: 14px; cursor: pointer; transition: all 0.3s ease; }
+#adModal .ad-claim-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+#adModal .ad-claim-btn.active { background: linear-gradient(135deg, var(--green), #16a34a); color: #fff; box-shadow: 0 8px 24px rgba(34,197,94,0.5); animation: claimPulse 1.5s infinite; }
+@media (max-width: 480px) {
+    #splash .logo { font-size: 40px; }
+    .coin-hero .coin-value { font-size: 20px; }
+    .reward-amount-big { font-size: 54px; }
+    .reward-coin-icon { font-size: 72px; }
+    .reward-card { padding: 28px 32px; }
+}
+@media (min-width: 768px) {
+    .ad-grid { grid-template-columns: repeat(4, 1fr); }
+    .modal { align-items: center; padding: 20px; }
+    .modal-content { border-radius: var(--r-xl); }
+    .modal-content::before { display: none; }
+}
+
+/* ============================================================
+   🆕 AD PAGE STYLES
+   ============================================================ */
+#adPage {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: var(--bg-0);
+    flex-direction: column;
+}
+#adPage.show {
+    display: flex;
+}
+#adPage .ad-page-header {
+    padding: 12px 16px;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    z-index: 2;
+}
+#adPage .ad-page-header h3 {
+    margin: 0;
+    font-size: 14px;
+    color: var(--neon-1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+}
+#adPage .ad-page-timer {
+    background: linear-gradient(135deg, var(--neon-1), var(--neon-2));
+    color: #fff;
+    font-size: 14px;
+    font-weight: 900;
+    padding: 5px 14px;
+    border-radius: 20px;
+    min-width: 52px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(168,85,247,0.6);
+    font-variant-numeric: tabular-nums;
+}
+#adPage .ad-page-progress-bg {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    flex-shrink: 0;
+}
+#adPage .ad-page-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--neon-1), var(--neon-3));
+    box-shadow: 0 0 12px var(--neon-1);
+    transition: width 0.3s;
+}
+#adPage .ad-page-iframe-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+}
+#adPage #adPageIframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+    background: #fff;
+}
+#adPage .ad-page-loading {
+    position: absolute;
+    inset: 0;
+    background: var(--bg-1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+#adPage .ad-page-loading i {
+    font-size: 44px;
+    color: var(--neon-1);
+    margin-bottom: 14px;
+}
+#adPage .ad-page-loading p {
+    color: var(--text-2);
+    font-size: 13px;
+    text-align: center;
+    padding: 0 20px;
+}
+#adPage .ad-page-footer {
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+    background: var(--bg-2);
+    border-top: 1px solid var(--glass-border);
+    flex-shrink: 0;
+    z-index: 2;
+}
+#adPage .ad-page-claim-btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(100, 100, 100, 0.3);
+    color: var(--text-3);
+    font-weight: 800;
+    font-size: 14px;
+    cursor: not-allowed;
+    transition: all 0.3s ease;
+    letter-spacing: 0.3px;
+}
+#adPage .ad-page-claim-btn.active {
+    background: linear-gradient(135deg, var(--green), #16a34a);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(34, 197, 94, 0.5);
+    animation: claimPulse 1.5s infinite;
+}
+    </style>
+</head>
+<body>
+
+    <div class="bg-layer">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div id="splash">
+        <div class="logo-wrap">
+            <div class="logo">𝙋𝙇𝘼𝙔 𝙋𝘼𝙐𝙆</div>
+            <div class="tagline">REWARDS</div>
+        </div>
+        <div class="loader"></div>
+    </div>
+
+    <div id="localModeIndicator">📱 Local Mode</div>
+    <div id="toast" class="toast"></div>
+
+    <div id="coinAnimationOverlay">
+        <div class="burst-ring"></div>
+        <div class="burst-ring"></div>
+        <div class="burst-ring"></div>
+        <div class="burst-ring"></div>
+        <div class="burst-ring"></div>
+        <div class="burst-ring"></div>
+        <div class="reward-card">
+            <span class="reward-coin-icon">🪙</span>
+            <div class="reward-label">Reward Earned</div>
+            <div class="reward-amount-big"><span class="plus">+</span><span id="rewardAmountNum">25</span></div>
+            <div class="reward-sub">Coins added to your wallet</div>
+            <div class="reward-total">Total: <strong id="rewardTotalCoins">0</strong> 🪙</div>
+        </div>
+    </div>
+
+    <div id="authScreen">
+        <div class="auth-box">
+            <div class="brand">
+                <span class="emoji">🎰</span>
+                <h1>PLAY PAUK REWARDS</h1>
+                <p>Watch ads & earn coins</p>
+            </div>
+            <div id="authError" class="error-msg"></div>
+            <div id="loginForm">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="user@email.com" />
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" />
+                </div>
+                <button class="btn" onclick="handleLogin()">🎰 Sign In</button>
+                <div class="toggle-link" onclick="toggleAuth('signup')">No account? <span>Sign Up</span></div>
+            </div>
+            <div id="signupForm" style="display:none;">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="signupUsername" placeholder="Player" />
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="signupEmail" placeholder="user@email.com" />
+                </div>
+                <div class="form-group">
+                    <label>Password (min 6)</label>
+                    <input type="password" id="signupPassword" placeholder="••••••••" />
+                </div>
+                <button class="btn" onclick="handleSignup()">🎰 Create Account</button>
+                <div class="toggle-link" onclick="toggleAuth('login')">Already have account? <span>Sign In</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="appContainer">
+        <div class="app-header">
+            <div class="user-chip" onclick="openModal('profileModal')">
+                <img id="headerAvatar" class="avatar" src="https://ui-avatars.com/api/?name=User&background=a855f7&color=fff&size=72" alt="avatar" />
+                <div class="info">
+                    <div class="name" id="headerUsername">Loading...</div>
+                    <div class="status">Online</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="hd-btn" onclick="toggleTheme()" id="themeToggleBtn">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="hd-btn admin-lock-btn" id="adminLockBtn" onclick="handleAdminLockClick()">
+                    <i class="fa-solid fa-lock"></i>
+                    <span class="tap-counter" id="tapCounter" style="position:absolute;top:-6px;right:-6px;background:var(--neon-1);color:#fff;font-size:9px;font-weight:800;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;">0</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="coin-hero">
+            <span class="coin-icon">🪙</span>
+            <div class="coin-info">
+                <div class="coin-label">Your Coins</div>
+                <div class="coin-value" id="totalCoins">0</div>
+            </div>
+            <div class="usdt-info">
+                <div class="label">USDT</div>
+                <div class="value" id="headerUsdt">$0.00</div>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h3><i class="fas fa-tv"></i> Ad Tasks (25 Coins)</h3>
+        </div>
+
+        <div class="ad-grid" id="adGrid"></div>
+
+        <div class="section-header">
+            <h3><i class="fas fa-gift"></i> နေ့စဉ် ဘောနပ်စ်</h3>
+        </div>
+
+        <div class="bonus-card">
+            <div class="bonus-icon">🎁</div>
+            <div class="bonus-info">
+                <div class="bonus-title">နေ့စဉ်ဘောနပ်စ်</div>
+                <div class="bonus-desc">တစ်နေ့ ၁ ခါပဲ ရယူနိုင်သည်</div>
+                <button class="bonus-claim-btn" id="dailyBonusBtn" onclick="claimDailyBonus()">
+                    <i class="fas fa-hand-holding-heart"></i> Claim +100
+                </button>
+                <div class="bonus-cooldown-text" id="dailyBonusCooldown"></div>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h3><i class="fas fa-chart-line"></i> Ad Dashboard</h3>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-header">
+                <div class="dashboard-title">
+                    <i class="fas fa-trophy"></i> ဒီနေ့ Top Viewer
+                </div>
+                <button class="dashboard-refresh" onclick="loadDashboard()">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+            <div id="topViewerCard" class="top-viewer-card">
+                <div class="top-loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+            </div>
+            <div class="dashboard-divider"></div>
+            <div class="dashboard-subtitle">
+                <i class="fas fa-history"></i> ဒီနေ့ ကြည့်ခဲ့သူများ
+            </div>
+            <div id="adHistoryList" class="ad-history-list">
+                <div class="top-loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <button class="nav-btn active" onclick="switchNav('home', this)">
+                <i class="fas fa-home"></i><span>Home</span>
+            </button>
+            <button class="nav-btn" onclick="openModal('marketModal')">
+                <i class="fas fa-store"></i><span>Market</span>
+            </button>
+            <button class="nav-btn" onclick="openModal('profileModal')">
+                <i class="fas fa-user"></i><span>Profile</span>
+            </button>
+            <button class="nav-btn" onclick="handleLogout()">
+                <i class="fas fa-sign-out-alt"></i><span>Exit</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 🆕 AD PAGE (Hidden by default) -->
+    <div id="adPage">
+        <div class="ad-page-header">
+            <h3>
+                <i class="fas fa-play-circle"></i> Ad Playing...
+            </h3>
+            <div class="ad-page-timer" id="adPageTimer">30</div>
+        </div>
+        <div class="ad-page-progress-bg">
+            <div class="ad-page-progress-fill" id="adPageProgress"></div>
+        </div>
+        <div class="ad-page-iframe-wrap">
+            <iframe id="adPageIframe" 
+                    src="about:blank"
+                    allow="autoplay; encrypted-media; clipboard-write"
+                    referrerpolicy="no-referrer">
+            </iframe>
+            <div class="ad-page-loading" id="adPageLoading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Ad Loading...</p>
+            </div>
+        </div>
+        <div class="ad-page-footer">
+            <button id="adPageClaimBtn" class="ad-page-claim-btn" disabled>
+                ⏳ 30s ပြည့်ရင် Coin ရမည်...
+            </button>
+        </div>
+    </div>
+
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <button class="close" onclick="closeModal('profileModal')">&times;</button>
+            <h3><i class="fa-regular fa-user"></i> Profile</h3>
+            <div class="profile-pic">
+                <img id="profileImg" src="https://ui-avatars.com/api/?name=User&background=a855f7&color=fff&size=90" alt="Profile" />
+                <input type="file" id="profileUpload" accept="image/*" onchange="uploadProfileImg(event)" />
+            </div>
+            <label>အသုံးပြုသူအမည်</label>
+            <input type="text" id="profileName" placeholder="User Name" onchange="updateProfile()" />
+            <label>Email</label>
+            <input type="email" id="profileEmail" disabled />
+            <div class="stat-row">
+                <div class="stat-card coin">
+                    <div class="s-label">🪙 Coins</div>
+                    <div class="s-value" id="profileCoins">0</div>
+                </div>
+                <div class="stat-card usdt">
+                    <div class="s-label">💰 USDT</div>
+                    <div class="s-value" id="profileUsdt">0.00</div>
+                </div>
+            </div>
+            <div class="admin-section" style="background:linear-gradient(135deg,rgba(168,85,247,0.1),rgba(34,211,238,0.05));border-color:rgba(168,85,247,0.3);">
+                <h4 style="color:var(--neon-1);"><i class="fas fa-gift"></i> Coin Gift ပို့ရန်</h4>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <input type="email" id="giftReceiverEmail" placeholder="Email" style="flex:2;min-width:100px;" />
+                    <input type="number" id="giftAmount" placeholder="ပမာဏ" style="flex:1;min-width:60px;" />
+                </div>
+                <button class="btn-sm gold" onclick="sendCoinGift()" style="width:100%;margin-top:8px;padding:10px;">
+                    <i class="fas fa-paper-plane"></i> ပို့မည် (Fee 20 Coin)
+                </button>
+                <div id="giftMsg" style="font-size:11px;margin-top:6px;"></div>
+            </div>
+            <button class="btn btn-outline" onclick="openHistoryModal()" style="margin-top:8px;">
+                <i class="fas fa-history"></i> Transaction History
+            </button>
+        </div>
+    </div>
+
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <button class="close" onclick="closeModal('historyModal')">&times;</button>
+            <h3><i class="fas fa-history"></i> History</h3>
+            <div id="transactionList" style="max-height:450px;overflow-y:auto;"></div>
+        </div>
+    </div>
+
+    <div id="marketModal" class="modal">
+        <div class="modal-content">
+            <button class="close" onclick="closeModal('marketModal')">&times;</button>
+            <h3><i class="fas fa-store"></i> Market</h3>
+
+            <div class="market-card" style="background:linear-gradient(135deg,rgba(34,211,238,0.15),rgba(99,102,241,0.08));border-color:rgba(34,211,238,0.3);">
+                <div>
+                    <div class="label">💵 USD → MMK (ပေါက်ဈေး)</div>
+                    <div class="value cyan" id="marketMmkRate">1 USD = --- Ks</div>
+                </div>
+                <div style="font-size:28px;">🇲🇲</div>
+            </div>
+
+            <div class="market-card">
+                <div>
+                    <div class="label">🪙 Coin → $ USD</div>
+                    <div class="value gold" id="marketRate">1$ = 3000 Coins</div>
+                </div>
+                <button class="btn" id="marketExchangeBtn" style="width:auto;padding:8px 16px;font-size:12px;" onclick="openExchangeFromMarket()">
+                    <i class="fas fa-arrow-right-arrow-left"></i> Exchange
+                </button>
+            </div>
+            <div class="market-card">
+                <div>
+                    <div class="label">💰 Your USDT</div>
+                    <div class="value green" id="marketUsdt">$0.00</div>
+                </div>
+            </div>
+
+            <div class="exchange-locked-notice" id="exchangeLockedMsg">
+                🔒 Exchange ပိတ်ထားပါသည်
+            </div>
+
+            <div style="margin-top:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <span style="font-size:12px;font-weight:700;">🏦 ငွေထုတ်ယူမှု</span>
+                    <span style="font-size:12px;font-weight:700;" id="withdrawStatus">🔒 ပိတ်ထားသည်</span>
+                </div>
+                <input type="number" id="withdrawAmount" placeholder="USDT ပမာဏ (min 5)" />
+                <button class="btn" id="withdrawBtn" disabled onclick="requestWithdraw()">ထုတ်မည်</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="exchangeModal" class="modal">
+        <div class="modal-content">
+            <button class="close" onclick="closeModal('exchangeModal')">&times;</button>
+            <h3><i class="fas fa-arrow-right-arrow-left"></i> Exchange</h3>
+
+            <div class="exchange-locked-notice" id="exchangeLockedNotice">
+                🔒 Exchange ပိတ်ထားပါသည်။ Admin မှ ပြန်ဖွင့်ပေးသည်အထိ စောင့်ပါ။
+            </div>
+
+            <div class="stat-row">
+                <div class="stat-card coin">
+                    <div class="s-label">Balance Coin</div>
+                    <div class="s-value" id="exchangeCoins">0</div>
+                </div>
+                <div class="stat-card usdt">
+                    <div class="s-label">Rate</div>
+                    <div class="s-value" style="font-size:13px;" id="exchangeRateDisplay">1$ = 3000</div>
+                </div>
+            </div>
+            <label>Coin Amount</label>
+            <input type="number" id="exchangeInput" placeholder="0" min="1" oninput="calculateExchange()" />
+            <div class="exchange-quick">
+                <button onclick="setExchangeAmount(1000)">1K</button>
+                <button onclick="setExchangeAmount(3000)">3K</button>
+                <button onclick="setExchangeAmount(5000)">5K</button>
+                <button onclick="setExchangeAmount(10000)">10K</button>
+            </div>
+            <div class="exchange-result">
+                You'll receive: <span id="exchangeUsdt" style="color:var(--green);font-size:20px;">$0.00</span>
+            </div>
+            <button class="btn btn-success" id="exchangeConfirmBtn" onclick="confirmExchange()"><i class="fas fa-check"></i> Confirm</button>
+        </div>
+    </div>
+
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <button class="close" onclick="closeModal('adminModal')">&times;</button>
+            <h3><i class="fa-solid fa-lock"></i> Admin Panel</h3>
+            <div id="adminLogin">
+                <label>Admin ID</label>
+                <input type="password" id="adminIdInput" placeholder="Enter Admin ID" />
+                <button class="btn" onclick="verifyAdmin()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Login</button>
+            </div>
+            <div id="adminDashboard" style="display:none;">
+                <p style="color:var(--green);font-weight:800;font-size:13px;margin-bottom:14px;">✅ Logged in</p>
+
+                <div class="admin-section">
+                    <h4><i class="fas fa-mobile-alt"></i> App Download Links (Ad3, Ad4)</h4>
+                    <div class="admin-row">
+                        <input type="text" id="adminAppLink" placeholder="App Link" style="flex:2;" />
+                        <button class="btn-sm green" onclick="adminAddAppLink()"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <div id="appListContainer" style="max-height:150px;overflow-y:auto;margin-top:8px;">
+                        <table>
+                            <thead><tr><th>Link</th><th>Action</th></tr></thead>
+                            <tbody id="appListBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h4><i class="fas fa-bullhorn"></i> Ad Watch Links (Ad1, Ad2)</h4>
+                    <div class="admin-row">
+                        <input type="text" id="adminAdLink" placeholder="Ad URL" style="flex:2;" />
+                        <button class="btn-sm green" onclick="adminAddAdLink()"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <div id="adListContainer" style="max-height:150px;overflow-y:auto;margin-top:8px;">
+                        <table>
+                            <thead><tr><th>Link</th><th>Action</th></tr></thead>
+                            <tbody id="adListBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h4><i class="fas fa-coins"></i> Coin Exchange Rate</h4>
+                    <div class="admin-row">
+                        <input type="number" id="adminRate" placeholder="1$ = ? Coins" />
+                        <button class="btn-sm green" onclick="adminSetRate()">Set</button>
+                    </div>
+                    <div style="font-size:10px;color:var(--text-3);margin-top:6px;">
+                        Current: 1$ = <span id="currentRateDisplay">3000</span> Coins
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h4><i class="fas fa-money-bill-wave"></i> USD → MMK Rate (ပေါက်ဈေး)</h4>
+                    <div class="admin-row">
+                        <input type="number" id="adminMmkRate" placeholder="1 USD = ? Ks" />
+                        <button class="btn-sm green" onclick="adminSetMmkRate()">Set</button>
+                    </div>
+                    <div style="font-size:10px;color:var(--text-3);margin-top:6px;">
+                        Current: 1 USD = <span id="currentMmkRateDisplay">---</span> Ks
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h4><i class="fas fa-power-off"></i> Coin Exchange Control</h4>
+                    <div class="admin-row">
+                        <button class="btn-sm" id="toggleExchangeBtn" style="flex:1;background:var(--green);color:#fff;" onclick="adminToggleExchange()">
+                            🔓 Exchange Open
+                        </button>
+                    </div>
+                    <div style="font-size:10px;color:var(--text-3);margin-top:6px;">
+                        Status: <span id="exchangeStatusDisplay" style="color:var(--green);font-weight:800;">OPEN</span>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h4><i class="fas fa-wallet"></i> Withdraw Control</h4>
+                    <div class="admin-row">
+                        <button class="btn-sm green" id="toggleWithdrawBtn" onclick="adminToggleWithdraw()">🔓 Open</button>
+                        <input type="date" id="adminWithdrawDate" style="flex:1;" />
+                        <button class="btn-sm green" onclick="adminSetWithdrawDate()">Set Date</button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h4><i class="fas fa-users"></i> Users <span id="userCount" style="background:var(--neon-1);color:#fff;padding:2px 10px;border-radius:20px;font-size:10px;margin-left:6px;">0</span></h4>
+                    <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+                        <input type="text" id="userSearchInput" placeholder="🔍 Search Email" style="flex:2;min-width:120px;margin-bottom:0;" />
+                        <button class="btn-sm green" onclick="searchUserByEmail()"><i class="fas fa-search"></i></button>
+                        <button class="btn-sm warning" onclick="clearUserSearch()"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div style="max-height:300px;overflow-y:auto;">
+                        <table id="adminUserTable">
+                            <thead><tr><th>User</th><th>Coin</th><th>USDT</th><th>Action</th></tr></thead>
+                            <tbody><tr><td colspan="4" style="color:var(--text-3);text-align:center;">Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h4><i class="fas fa-coins"></i> Manage User Coins</h4>
+                    <div class="admin-row">
+                        <input type="email" id="adminTargetEmail" placeholder="Email" style="flex:2;" />
+                        <input type="number" id="adminCoinAmount" placeholder="Amt" style="width:70px;" />
+                    </div>
+                    <div class="admin-row" style="margin-top:8px;">
+                        <button class="btn-sm green" onclick="adminAddCoin()" style="flex:1;">Add</button>
+                        <button class="btn-sm red" onclick="adminRemoveCoin()" style="flex:1;">Remove</button>
+                    </div>
+                    <div id="adminCoinMsg" style="font-size:12px;margin-top:6px;"></div>
+                </div>
+
+                <div class="admin-section">
+                    <h4><i class="fas fa-clipboard-list"></i> Withdraw Requests</h4>
+                    <div style="max-height:200px;overflow-y:auto;">
+                        <table>
+                            <thead><tr><th>User</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody id="withdrawRequestsBody"><tr><td colspan="4" style="color:var(--text-3);text-align:center;">No requests</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <button class="btn btn-outline" onclick="adminLogout()"><i class="fa-solid fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        //  FIREBASE
+        // ============================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyC4LfmZL-_AicVGkaHEVnbwdlCtsJGKmBk",
+            authDomain: "play-pauk.firebaseapp.com",
+            projectId: "play-pauk",
+            storageBucket: "play-pauk.firebasestorage.app",
+            messagingSenderId: "1071661436309",
+            appId: "1:1071661436309:web:c3e568e114711649c63a9c",
+            measurementId: "G-VW1MD3JRD6"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+
+        const AD_REWARD = 25;
+        const AD_DURATION = 30;
+        const COOLDOWN = 2 * 60 * 1000;
+        const TOP_BONUS = 1500;
+        const TOP_BONUS_TARGET = 50;
+        const ADMIN_IDS = ["2021666", "7625227853"];
+        const GIFT_FEE = 20;
+
+        const AD_CARDS = [
+            { id: 'ad1', type: 'watch', title: 'Ad1 — Watch', icon: '📺', reward: 25 },
+            { id: 'ad2', type: 'watch', title: 'Ad2 — Watch', icon: '🎬', reward: 25 },
+            { id: 'ad3', type: 'download', title: 'Ad3 — Download', icon: '📥', reward: 25 },
+            { id: 'ad4', type: 'download', title: 'Ad4 — Download', icon: '📲', reward: 25 }
+        ];
+
+        let adLinks = [];
+        let appLinks = [];
+        let currentUser = null;
+        let userData = { coins: 0, usdt: 0, username: 'User', email: '', isBanned: false };
+        let isAdmin = false;
+        let exchangeRate = 3000;
+        let mmkRate = 0;
+        let isExchangeOpen = true;
+        let isUpdatingCoins = false;
+        let isAdPlaying = false;
+        let adCardTimers = {};
+
+        let adPageInterval = null;
+        let adPageAutoTimer = null;
+        let currentAdUrl = '';
+        let currentAdCard = null;
+
+        let isWithdrawOpen = localStorage.getItem('isWithdrawOpen') === 'true';
+        let withdrawDate = localStorage.getItem('withdrawDate') || '';
+
+        let coinLockTimeout = null;
+        function acquireCoinLock() {
+            if (isUpdatingCoins) return false;
+            isUpdatingCoins = true;
+            clearTimeout(coinLockTimeout);
+            coinLockTimeout = setTimeout(() => { isUpdatingCoins = false; }, 10000);
+            return true;
+        }
+        function releaseCoinLock() {
+            clearTimeout(coinLockTimeout);
+            isUpdatingCoins = false;
+        }
+
+        let audioContext = null;
+        function playCoinSound() {
+            try {
+                if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const now = audioContext.currentTime;
+                playTone(988, now, 0.08, 0.3);
+                playTone(1319, now + 0.08, 0.2, 0.25);
+                playTone(1760, now + 0.15, 0.15, 0.15);
+            } catch (e) {}
+        }
+        function playBigRewardSound() {
+            try {
+                if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const now = audioContext.currentTime;
+                playTone(523, now, 0.1, 0.2);
+                playTone(659, now + 0.1, 0.1, 0.25);
+                playTone(784, now + 0.2, 0.1, 0.3);
+                playTone(1047, now + 0.3, 0.15, 0.35);
+                playTone(1319, now + 0.45, 0.3, 0.4);
+            } catch (e) {}
+        }
+        function playTone(frequency, startTime, duration, volume) {
+            try {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = frequency;
+                gain.gain.setValueAtTime(0, startTime);
+                gain.gain.linearRampToValueAtTime(volume, startTime + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.start(startTime);
+                osc.stop(startTime + duration);
+            } catch (e) {}
+        }
+
+        function showCoinAnimation(amount, totalCoins) {
+            const overlay = document.getElementById('coinAnimationOverlay');
+            const amountEl = document.getElementById('rewardAmountNum');
+            const totalEl = document.getElementById('rewardTotalCoins');
+            if (!overlay) return;
+
+            amountEl.textContent = '0';
+            totalEl.textContent = totalCoins;
+            document.querySelectorAll('.coin-particle, .confetti, .sparkle').forEach(el => el.remove());
+            overlay.classList.add('show');
+
+            if (amount >= 100) playBigRewardSound();
+            else playCoinSound();
+
+            setTimeout(() => {
+                overlay.classList.add('shake');
+                setTimeout(() => overlay.classList.remove('shake'), 600);
+            }, 100);
+
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const coin = document.createElement('div');
+                    coin.className = 'coin-particle';
+                    coin.textContent = '🪙';
+                    coin.style.left = Math.random() * 100 + '%';
+                    coin.style.animationDelay = Math.random() * 0.5 + 's';
+                    coin.style.fontSize = (12 + Math.random() * 12) + 'px';
+                    coin.style.width = (24 + Math.random() * 16) + 'px';
+                    coin.style.height = coin.style.width;
+                    overlay.appendChild(coin);
+                    setTimeout(() => coin.remove(), 4000);
+                }, i * 30);
+            }
+
+            const colors = ['#a855f7', '#22d3ee', '#f472b6', '#fbbf24', '#22c55e'];
+            for (let i = 0; i < 60; i++) {
+                setTimeout(() => {
+                    const c = document.createElement('div');
+                    c.className = 'confetti';
+                    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = 200 + Math.random() * 350;
+                    c.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+                    c.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+                    c.style.setProperty('--rot', (Math.random() * 1080 - 540) + 'deg');
+                    overlay.appendChild(c);
+                    setTimeout(() => c.remove(), 2500);
+                }, i * 20);
+            }
+
+            const sparkleChars = ['✨', '⭐', '💫', '🌟'];
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const s = document.createElement('div');
+                    s.className = 'sparkle';
+                    s.textContent = sparkleChars[Math.floor(Math.random() * sparkleChars.length)];
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = 150 + Math.random() * 250;
+                    s.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+                    s.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+                    s.style.left = '50%';
+                    s.style.top = '50%';
+                    s.style.fontSize = (16 + Math.random() * 16) + 'px';
+                    overlay.appendChild(s);
+                    setTimeout(() => s.remove(), 2500);
+                }, i * 40);
+            }
+
+            const duration = 1500;
+            const start = Date.now();
+            const countUp = () => {
+                const elapsed = Date.now() - start;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 4);
+                amountEl.textContent = Math.round(amount * eased);
+                if (progress < 1) requestAnimationFrame(countUp);
+                else amountEl.textContent = amount;
+            };
+            requestAnimationFrame(countUp);
+
+            if (navigator.vibrate) navigator.vibrate([80, 40, 80, 40, 150]);
+            setTimeout(() => overlay.classList.remove('show'), 4000);
+        }
+
+        function renderAdCards() {
+            const container = document.getElementById('adGrid');
+            if (!container) return;
+            container.innerHTML = '';
+
+            AD_CARDS.forEach((card) => {
+                const lastClaimKey = 'adClaim_' + card.id + '_' + (currentUser?.uid || 'guest');
+                const lastClaim = parseInt(localStorage.getItem(lastClaimKey) || '0');
+                const now = Date.now();
+                const remaining = COOLDOWN - (now - lastClaim);
+                const isCooldown = lastClaim > 0 && remaining > 0;
+
+                const cardEl = document.createElement('div');
+                cardEl.className = 'ad-card';
+                cardEl.id = 'card_' + card.id;
+
+                if (isCooldown) cardEl.classList.add('cooldown');
+                else cardEl.classList.add('available');
+
+                const btnClass = card.type === 'watch' ? 'watch' : 'download';
+                const btnIcon = card.type === 'watch' ? 'fa-play' : 'fa-download';
+                const btnText = card.type === 'watch' ? 'Watch' : 'Download';
+
+                cardEl.innerHTML = `
+                    <span class="ad-card-icon">${card.icon}</span>
+                    <div class="ad-card-title">${card.title}</div>
+                    <div class="ad-card-reward">
+                        <span class="reward-amount-big">+${card.reward}</span>
+                        <span class="reward-text">🪙</span>
+                    </div>
+                    <button class="ad-action-btn ${btnClass}" 
+                            ${isCooldown ? 'disabled' : ''}
+                            onclick="startAdTask('${card.id}')">
+                        <i class="fas ${btnIcon}"></i> ${btnText}
+                    </button>
+                    <div class="ad-cooldown-text" id="cooldown_${card.id}">
+                        ${isCooldown ? formatTime(remaining) + ' စောင့်ပါ' : ''}
+                    </div>
+                `;
+                container.appendChild(cardEl);
+
+                if (isCooldown) startCardCooldownTimer(card.id, remaining);
+            });
+        }
+
+        function formatTime(ms) {
+            const m = Math.floor(ms / 60000);
+            const s = Math.floor((ms % 60000) / 1000);
+            return m + ':' + String(s).padStart(2, '0');
+        }
+
+        function startCardCooldownTimer(cardId, remaining) {
+            if (adCardTimers[cardId]) clearInterval(adCardTimers[cardId]);
+            adCardTimers[cardId] = setInterval(() => {
+                remaining -= 1000;
+                if (remaining <= 0) {
+                    clearInterval(adCardTimers[cardId]);
+                    delete adCardTimers[cardId];
+                    renderAdCards();
+                    return;
+                }
+                const el = document.getElementById('cooldown_' + cardId);
+                if (el) el.textContent = formatTime(remaining) + ' စောင့်ပါ';
+            }, 1000);
+        }
+
+        // ============================================================
+        //  🎬 AD TASK - IN-APP TAB PAGE (30s Auto Return)
+        // ============================================================
+        function startAdTask(cardId) {
+            console.log('🎬 startAdTask:', cardId);
+            
+            if (!currentUser) { showToast('❌ Please login', 'error'); return; }
+            if (isAdPlaying) { showToast('⏳ Ad ကနေဆဲ', 'warning'); return; }
+
+            const card = AD_CARDS.find(c => c.id === cardId);
+            if (!card) return;
+
+            // Link ရှာမယ်
+            let adUrl = '';
+            if (card.type === 'watch') {
+                adUrl = (adLinks && adLinks.length > 0) ? adLinks[0] : 
+                        (appLinks && appLinks.length > 0) ? appLinks[0] : '';
+            } else {
+                adUrl = (appLinks && appLinks.length > 0) ? appLinks[0] : 
+                        (adLinks && adLinks.length > 0) ? adLinks[0] : '';
+            }
+            
+            if (!adUrl) {
+                showToast('❌ Link မရှိ။ Admin မှာ ထည့်ပါ။', 'error');
+                return;
+            }
+            
+            if (!adUrl.startsWith('http://') && !adUrl.startsWith('https://')) {
+                adUrl = 'https://' + adUrl;
+            }
+
+            currentAdUrl = adUrl;
+            currentAdCard = card;
+            isAdPlaying = true;
+
+            // ============================================================
+            // AD PAGE ကို ပြ
+            // ============================================================
+            const adPage = document.getElementById('adPage');
+            const mainContainer = document.getElementById('appContainer');
+            
+            if (mainContainer) mainContainer.style.display = 'none';
+            if (adPage) adPage.classList.add('show');
+
+            // ============================================================
+            // IFRAME မှာ Ads ဖွင့်
+            // ============================================================
+            const iframe = document.getElementById('adPageIframe');
+            const loading = document.getElementById('adPageLoading');
+            const progressBar = document.getElementById('adPageProgress');
+            const timerEl = document.getElementById('adPageTimer');
+            const claimBtn = document.getElementById('adPageClaimBtn');
+
+            if (loading) {
+                loading.style.display = 'flex';
+                loading.innerHTML = `
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Ad Loading...</p>
+                `;
+            }
+            if (progressBar) progressBar.style.width = '0%';
+            if (timerEl) timerEl.textContent = AD_DURATION;
+            if (claimBtn) {
+                claimBtn.disabled = true;
+                claimBtn.className = 'ad-page-claim-btn';
+                claimBtn.innerHTML = `⏳ ${AD_DURATION}s ပြည့်ရင် Coin ရမည်...`;
+            }
+
+            if (iframe) {
+                iframe.src = adUrl;
+                
+                iframe.onload = () => {
+                    console.log('✅ Ad iframe loaded');
+                    setTimeout(() => {
+                        if (loading) loading.style.display = 'none';
+                    }, 800);
+                };
+                
+                // 5s အတွင်း မပေါ်ရင် message ပြ
+                setTimeout(() => {
+                    if (loading && loading.style.display !== 'none') {
+                        loading.innerHTML = `
+                            <i class="fas fa-exclamation-circle" style="color:var(--gold-1);"></i>
+                            <p>Ad loading ကြာနေပါသည်...<br>ခဏစောင့်ပါ</p>
+                        `;
+                    }
+                }, 5000);
+            }
+
+            // ============================================================
+            // ⏰ COUNTDOWN (30s)
+            // ============================================================
+            let isClaimed = false;
+            const startTime = Date.now();
+
+            if (adPageInterval) clearInterval(adPageInterval);
+            if (adPageAutoTimer) clearTimeout(adPageAutoTimer);
+
+            adPageInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const timeLeft = Math.max(AD_DURATION - elapsed, 0);
+                const progressPercent = Math.min((elapsed / AD_DURATION) * 100, 100);
+
+                if (progressBar) progressBar.style.width = progressPercent + '%';
+                if (timerEl) timerEl.textContent = timeLeft;
+
+                // ============================================================
+                // 30s ပြည့်ရင်
+                // ============================================================
+                if (timeLeft <= 0) {
+                    clearInterval(adPageInterval);
+                    adPageInterval = null;
+                    if (progressBar) progressBar.style.width = '100%';
+
+                    if (card.type === 'watch') {
+                        // WATCH AD → AUTO CLAIM
+                        if (claimBtn) {
+                            claimBtn.disabled = false;
+                            claimBtn.className = 'ad-page-claim-btn active';
+                            claimBtn.innerHTML = `✅ +${card.reward} Coins ရယူနေသည်...`;
+                        }
+
+                        console.log('🎉 Auto-claim for Watch Ad');
+                        
+                        setTimeout(() => {
+                            if (!isClaimed) {
+                                isClaimed = true;
+                                claimAdReward();
+                            }
+                        }, 500);
+
+                    } else {
+                        // DOWNLOAD → USER ကိုယ်တိုင် CLAIM
+                        if (claimBtn) {
+                            claimBtn.disabled = false;
+                            claimBtn.className = 'ad-page-claim-btn active';
+                            claimBtn.innerHTML = `✅ Claim ${card.reward} Coins`;
+                            
+                            claimBtn.onclick = function () {
+                                if (isClaimed) return;
+                                isClaimed = true;
+                                claimBtn.disabled = true;
+                                claimBtn.innerHTML = '⏳ Adding...';
+                                claimAdReward();
+                            };
+                        }
+                    }
+                }
+            }, 250);
+        }
+
+        // ============================================================
+        // AD PAGE ကို ပိတ်ပြီး MAIN ကို ပြန်ခေါ်
+        // ============================================================
+        function closeAdPageAndReturn() {
+            console.log('🔙 Returning to main page...');
+            
+            if (adPageInterval) { clearInterval(adPageInterval); adPageInterval = null; }
+            if (adPageAutoTimer) { clearTimeout(adPageAutoTimer); adPageAutoTimer = null; }
+
+            const iframe = document.getElementById('adPageIframe');
+            if (iframe) iframe.src = 'about:blank';
+
+            const adPage = document.getElementById('adPage');
+            if (adPage) adPage.classList.remove('show');
+
+            const mainContainer = document.getElementById('appContainer');
+            if (mainContainer) mainContainer.style.display = 'flex';
+
+            isAdPlaying = false;
+            currentAdCard = null;
+
+            const progressBar = document.getElementById('adPageProgress');
+            if (progressBar) progressBar.style.width = '0%';
+            
+            const timerEl = document.getElementById('adPageTimer');
+            if (timerEl) timerEl.textContent = AD_DURATION;
+            
+            const loading = document.getElementById('adPageLoading');
+            if (loading) {
+                loading.style.display = 'flex';
+                loading.innerHTML = `
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Ad Loading...</p>
+                `;
+            }
+            
+            const claimBtn = document.getElementById('adPageClaimBtn');
+            if (claimBtn) {
+                claimBtn.disabled = true;
+                claimBtn.className = 'ad-page-claim-btn';
+                claimBtn.innerHTML = `⏳ ${AD_DURATION}s ပြည့်ရင် Coin ရမည်...`;
+            }
+        }
+
+        async function claimAdReward() {
+            if (!currentUser || !currentAdCard) return;
+            if (!acquireCoinLock()) { showToast('⏳ Please wait', 'warning'); return; }
+
+            try {
+                const reward = currentAdCard.reward;
+                const newCoins = (userData.coins || 0) + reward;
+                userData.coins = newCoins;
+                saveCoinsToLocal(newCoins);
+                updateUI();
+
+                try {
+                    await db.collection('users').doc(currentUser.uid).update({
+                        coins: firebase.firestore.FieldValue.increment(reward)
+                    });
+                    await db.collection('transactions').add({
+                        userId: currentUser.uid, type: 'ad_watch', amount: reward,
+                        description: `${currentAdCard.title} - ${reward} Coins`,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } catch (err) {
+                    saveTransactionLocal('ad_watch', reward, currentAdCard.title + ' [Local]');
+                    showLocalModeIndicator(true);
+                }
+
+                await saveAdWatchRecord(reward);
+                localStorage.setItem('adClaim_' + currentAdCard.id + '_' + currentUser.uid, Date.now().toString());
+
+                closeAdPageAndReturn();
+                showCoinAnimation(reward, newCoins);
+                renderAdCards();
+                showToast(`✅ +${reward} Coins ရပါပြီ!`, 'success');
+                loadDashboard();
+            } catch (error) {
+                console.error(error);
+                showToast('❌ Failed', 'error');
+                closeAdPageAndReturn();
+            } finally {
+                setTimeout(() => { releaseCoinLock(); syncLocalTransactions(); }, 1500);
+            }
+        }
+
+        async function saveAdWatchRecord(reward) {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const recordId = currentUser.uid + '_' + today;
+                const recordRef = db.collection('adWatches').doc(recordId);
+                const recordDoc = await recordRef.get();
+
+                if (recordDoc.exists) {
+                    await recordRef.update({
+                        count: firebase.firestore.FieldValue.increment(1),
+                        totalCoins: firebase.firestore.FieldValue.increment(reward),
+                        username: userData.username || 'User',
+                        email: userData.email || '',
+                        lastWatch: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } else {
+                    await recordRef.set({
+                        userId: currentUser.uid,
+                        username: userData.username || 'User',
+                        email: userData.email || '',
+                        date: today,
+                        count: 1,
+                        totalCoins: reward,
+                        firstWatch: firebase.firestore.FieldValue.serverTimestamp(),
+                        lastWatch: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+            } catch (err) {
+                console.error('Save ad record error:', err);
+            }
+        }
+
+        async function loadDashboard() {
+            if (!currentUser) return;
+
+            const topViewerCard = document.getElementById('topViewerCard');
+            const historyList = document.getElementById('adHistoryList');
+
+            topViewerCard.innerHTML = '<div class="top-loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+            historyList.innerHTML = '<div class="top-loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const snapshot = await db.collection('adWatches').where('date', '==', today).get();
+
+                if (snapshot.empty) {
+                    topViewerCard.innerHTML = '<div class="top-loading">🎯 ဒီနေ့ ဘယ်သူမှ မကြည့်ရသေးပါ</div>';
+                    historyList.innerHTML = '<div class="top-loading">No records yet</div>';
+                    return;
+                }
+
+                const records = [];
+                snapshot.forEach(doc => records.push({ id: doc.id, ...doc.data() }));
+                records.sort((a, b) => (b.count || 0) - (a.count || 0));
+
+                const myRecord = records.find(r => r.userId === currentUser.uid);
+                const myCount = myRecord ? (myRecord.count || 0) : 0;
+                const top = records[0];
+                const isMeTop = top.userId === currentUser.uid;
+
+                const progressPercent = Math.min((myCount / TOP_BONUS_TARGET) * 100, 100);
+                const isComplete = myCount >= TOP_BONUS_TARGET;
+
+                const bonusClaimedKey = 'topBonusClaimed_' + today + '_' + currentUser.uid;
+                const bonusClaimed = localStorage.getItem(bonusClaimedKey) === 'true';
+
+                let claimBtnHtml = '';
+                if (isComplete && !bonusClaimed) {
+                    claimBtnHtml = `<button class="claim-bonus-btn" onclick="claimTopBonus(${TOP_BONUS})"><i class="fas fa-crown"></i> Bonus +${TOP_BONUS} Coins ရယူမည်</button>`;
+                } else if (bonusClaimed) {
+                    claimBtnHtml = `<div style="text-align:center;padding:10px;color:var(--green);font-size:12px;font-weight:800;">✅ Bonus ရယူပြီးပါပြီ</div>`;
+                } else {
+                    claimBtnHtml = `<button class="claim-bonus-btn locked" disabled><i class="fas fa-lock"></i> Ad ${TOP_BONUS_TARGET} ခု ကြည့်ပါ (${myCount}/${TOP_BONUS_TARGET})</button>`;
+                }
+
+                let topCardHtml = `
+                    <div class="top-viewer-content">
+                        <div class="top-viewer-rank">🥇</div>
+                        <div class="top-viewer-info">
+                            <div class="top-viewer-name">${top.username || 'User'}${isMeTop ? ' (You)' : ''}</div>
+                            <div class="top-viewer-count">👁️ ${top.count || 0} ads • 🪙 ${top.totalCoins || 0} coins</div>
+                        </div>
+                        <div class="top-viewer-badge">TOP</div>
+                    </div>
+                    <div class="top-bonus-progress">
+                        <div class="progress-label-row">
+                            <span class="label-left">🎯 မင်းရဲ့ Progress</span>
+                            <span class="label-right">${myCount}/${TOP_BONUS_TARGET} ads</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill ${isComplete ? 'complete' : ''}" style="width: ${progressPercent}%"></div>
+                        </div>
+                        <div class="progress-stats-row">
+                            <span>${isComplete ? '✅ ပြည့်သွားပြီ!' : 'Bonus ရဖို့ ' + (TOP_BONUS_TARGET - myCount) + ' ads ထပ်ကြည့်ပါ'}</span>
+                            <span>${Math.round(progressPercent)}%</span>
+                        </div>
+                    </div>
+                `;
+
+                topViewerCard.innerHTML = topCardHtml + claimBtnHtml;
+
+                let historyHtml = '';
+                records.slice(0, 20).forEach((r, i) => {
+                    const rank = i + 1;
+                    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank + '.';
+                    const isCurrentUser = r.userId === currentUser.uid;
+                    historyHtml += `
+                        <div class="history-row ${rank === 1 ? 'rank-1' : ''}">
+                            <div class="h-rank">${medal}</div>
+                            <div class="h-name">${r.username || 'User'}${isCurrentUser ? ' (You)' : ''}</div>
+                            <div class="h-count">${r.count || 0} ads</div>
+                        </div>
+                    `;
+                });
+                historyList.innerHTML = historyHtml;
+
+            } catch (err) {
+                console.error('Load dashboard error:', err);
+                topViewerCard.innerHTML = '<div class="top-loading">🎯 Error loading</div>';
+                historyList.innerHTML = '<div class="top-loading">No records</div>';
+            }
+        }
+
+        async function claimTopBonus(amount) {
+            if (!currentUser) return;
+            const today = new Date().toISOString().split('T')[0];
+            const claimedKey = 'topBonusClaimed_' + today + '_' + currentUser.uid;
+
+            if (localStorage.getItem(claimedKey) === 'true') {
+                showToast('❌ ဒီနေ့ Bonus ရယူပြီးပါပြီ', 'error');
+                return;
+            }
+
+            try {
+                const recordId = currentUser.uid + '_' + today;
+                const recordDoc = await db.collection('adWatches').doc(recordId).get();
+                if (!recordDoc.exists || (recordDoc.data().count || 0) < TOP_BONUS_TARGET) {
+                    showToast(`❌ Ad ${TOP_BONUS_TARGET} ခု မပြည့်သေးပါ`, 'error');
+                    return;
+                }
+            } catch (e) {
+                showToast('❌ Verification failed', 'error');
+                return;
+            }
+
+            if (!confirm(`🎁 ${amount} Coins Bonus ရယူမည်?`)) return;
+            if (!acquireCoinLock()) { showToast('⏳ Please wait', 'warning'); return; }
+
+            try {
+                const newCoins = (userData.coins || 0) + amount;
+                userData.coins = newCoins;
+                saveCoinsToLocal(newCoins);
+                updateUI();
+
+                try {
+                    await db.collection('users').doc(currentUser.uid).update({
+                        coins: firebase.firestore.FieldValue.increment(amount)
+                    });
+                    await db.collection('transactions').add({
+                        userId: currentUser.uid, type: 'top_viewer_bonus', amount: amount,
+                        description: `Top Viewer Bonus (${TOP_BONUS_TARGET} ads) - ${amount} Coins`,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } catch (err) {
+                    saveTransactionLocal('top_viewer_bonus', amount, 'Top Viewer Bonus [Local]');
+                }
+
+                localStorage.setItem(claimedKey, 'true');
+                showCoinAnimation(amount, newCoins);
+                showToast(`🎉 +${amount} Coins Bonus!`, 'success');
+                loadDashboard();
+            } catch (err) {
+                showToast('❌ Failed', 'error');
+            } finally {
+                setTimeout(() => releaseCoinLock(), 1500);
+            }
+        }
+
+        function updateDailyBonusUI() {
+            const btn = document.getElementById('dailyBonusBtn');
+            const cooldownEl = document.getElementById('dailyBonusCooldown');
+            if (!btn || !currentUser) return;
+
+            const lastClaimKey = 'dailyBonus_' + currentUser.uid;
+            const lastClaim = parseInt(localStorage.getItem(lastClaimKey) || '0');
+            const now = Date.now();
+            const ONE_DAY = 24 * 60 * 60 * 1000;
+            const remaining = ONE_DAY - (now - lastClaim);
+
+            if (lastClaim > 0 && remaining > 0) {
+                btn.disabled = true;
+                const hours = Math.floor(remaining / 3600000);
+                const mins = Math.floor((remaining % 3600000) / 60000);
+                cooldownEl.textContent = `⏳ ${hours}h ${mins}m စောင့်ပါ`;
+            } else {
+                btn.disabled = false;
+                cooldownEl.textContent = '';
+            }
+        }
+
+        async function claimDailyBonus() {
+            if (!currentUser) { showToast('❌ Please login', 'error'); return; }
+
+            const lastClaimKey = 'dailyBonus_' + currentUser.uid;
+            const lastClaim = parseInt(localStorage.getItem(lastClaimKey) || '0');
+            const now = Date.now();
+            const ONE_DAY = 24 * 60 * 60 * 1000;
+
+            if (lastClaim > 0 && (now - lastClaim) < ONE_DAY) {
+                showToast('❌ ဒီနေ့ ရယူပြီးပါပြီ', 'error');
+                return;
+            }
+
+            if (!acquireCoinLock()) { showToast('⏳ Please wait', 'warning'); return; }
+
+            try {
+                const reward = 100;
+                userData.coins += reward;
+                saveCoinsToLocal(userData.coins);
+                updateUI();
+
+                try {
+                    await db.collection('users').doc(currentUser.uid).update({
+                        coins: firebase.firestore.FieldValue.increment(reward)
+                    });
+                    await db.collection('transactions').add({
+                        userId: currentUser.uid, type: 'daily_bonus', amount: reward,
+                        description: 'Daily Bonus',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } catch (e) {
+                    saveTransactionLocal('daily_bonus', reward, 'Daily Bonus [Local]');
+                }
+
+                localStorage.setItem(lastClaimKey, now.toString());
+                updateDailyBonusUI();
+                showCoinAnimation(reward, userData.coins);
+                showToast('🎁 +100 Coins!', 'success');
+            } catch (e) { showToast('❌ Failed', 'error'); }
+            finally { releaseCoinLock(); }
+        }
+
+        function updateUI() {
+            const localCoins = getCoinsFromLocal();
+            if (localCoins !== null && !isUpdatingCoins) userData.coins = localCoins;
+
+            const coins = userData.coins || 0;
+            const usdt = userData.usdt || 0;
+            const username = userData.username || 'User';
+
+            document.getElementById('totalCoins').textContent = coins;
+            document.getElementById('profileCoins').textContent = coins;
+            document.getElementById('profileUsdt').textContent = usdt.toFixed(2);
+            document.getElementById('profileName').value = username;
+            document.getElementById('profileEmail').value = userData.email || '';
+            document.getElementById('marketUsdt').textContent = '$' + usdt.toFixed(2);
+            document.getElementById('exchangeCoins').textContent = coins;
+            document.getElementById('headerUsername').textContent = username;
+            document.getElementById('headerUsdt').textContent = '$' + usdt.toFixed(2);
+
+            const avatar = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(username) + '&background=a855f7&color=fff&size=72';
+            const savedImg = localStorage.getItem('profileImg');
+            document.getElementById('profileImg').src = savedImg || avatar;
+            document.getElementById('headerAvatar').src = savedImg || avatar;
+
+            updateWithdrawUI();
+            updateExchangeRateUI();
+            updateExchangeStatusUI();
+        }
+
+        function updateWithdrawUI() {
+            const statusEl = document.getElementById('withdrawStatus');
+            const btn = document.getElementById('withdrawBtn');
+            if (!statusEl || !btn) return;
+            if (isWithdrawOpen) {
+                statusEl.textContent = '✅ Open';
+                statusEl.style.color = 'var(--green)';
+                btn.disabled = false;
+            } else {
+                statusEl.textContent = '🔒 Locked';
+                statusEl.style.color = 'var(--red)';
+                btn.disabled = true;
+            }
+        }
+
+        async function loadExchangeRate() {
+            try {
+                const doc = await db.collection('settings').doc('exchangeRate').get();
+                if (doc.exists) {
+                    exchangeRate = doc.data().rate || 3000;
+                    mmkRate = doc.data().mmkRate || 0;
+                    isExchangeOpen = doc.data().isExchangeOpen !== false;
+                } else {
+                    exchangeRate = 3000;
+                    mmkRate = 0;
+                    isExchangeOpen = true;
+                    await db.collection('settings').doc('exchangeRate').set({
+                        rate: 3000, mmkRate: 0, isExchangeOpen: true,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+                updateExchangeRateUI();
+                updateExchangeStatusUI();
+            } catch (error) {
+                exchangeRate = 3000;
+                mmkRate = 0;
+                isExchangeOpen = true;
+                updateExchangeRateUI();
+                updateExchangeStatusUI();
+            }
+        }
+
+        function updateExchangeRateUI() {
+            const el1 = document.getElementById('marketRate');
+            const el2 = document.getElementById('exchangeRateDisplay');
+            const el3 = document.getElementById('currentRateDisplay');
+            const el4 = document.getElementById('marketMmkRate');
+            const el5 = document.getElementById('currentMmkRateDisplay');
+            if (el1) el1.textContent = '1$ = ' + exchangeRate + ' Coins';
+            if (el2) el2.textContent = '1$ = ' + exchangeRate;
+            if (el3) el3.textContent = exchangeRate;
+            if (el4) {
+                if (mmkRate > 0) el4.textContent = '1 USD = ' + mmkRate.toLocaleString() + ' Ks';
+                else el4.textContent = '1 USD = --- Ks';
+            }
+            if (el5) {
+                if (mmkRate > 0) el5.textContent = mmkRate.toLocaleString();
+                else el5.textContent = '---';
+            }
+            const adminRate = document.getElementById('adminRate');
+            if (adminRate) adminRate.value = exchangeRate;
+            const adminMmkRate = document.getElementById('adminMmkRate');
+            if (adminMmkRate && mmkRate > 0) adminMmkRate.value = mmkRate;
+        }
+
+        function updateExchangeStatusUI() {
+            const statusDisplay = document.getElementById('exchangeStatusDisplay');
+            const toggleBtn = document.getElementById('toggleExchangeBtn');
+            const lockedMsg = document.getElementById('exchangeLockedMsg');
+            const lockedNotice = document.getElementById('exchangeLockedNotice');
+            const confirmBtn = document.getElementById('exchangeConfirmBtn');
+            const marketBtn = document.getElementById('marketExchangeBtn');
+
+            if (isExchangeOpen) {
+                if (statusDisplay) { statusDisplay.textContent = 'OPEN'; statusDisplay.style.color = 'var(--green)'; }
+                if (toggleBtn) {
+                    toggleBtn.textContent = '🔓 Exchange Open';
+                    toggleBtn.style.background = 'linear-gradient(135deg, var(--green), #16a34a)';
+                    toggleBtn.style.color = '#fff';
+                }
+                if (lockedMsg) lockedMsg.classList.remove('show');
+                if (lockedNotice) lockedNotice.classList.remove('show');
+                if (confirmBtn) confirmBtn.disabled = false;
+                if (marketBtn) marketBtn.disabled = false;
+            } else {
+                if (statusDisplay) { statusDisplay.textContent = 'CLOSED'; statusDisplay.style.color = 'var(--red)'; }
+                if (toggleBtn) {
+                    toggleBtn.textContent = '🔒 Exchange Closed';
+                    toggleBtn.style.background = 'linear-gradient(135deg, var(--red), #b91c1c)';
+                    toggleBtn.style.color = '#fff';
+                }
+                if (lockedMsg) lockedMsg.classList.add('show');
+                if (lockedNotice) lockedNotice.classList.add('show');
+                if (confirmBtn) confirmBtn.disabled = true;
+            }
+        }
+
+        async function adminSetRate() {
+            const rate = parseInt(document.getElementById('adminRate').value);
+            if (!rate || rate < 1) { showToast('Invalid rate', 'error'); return; }
+            try {
+                await db.collection('settings').doc('exchangeRate').set({
+                    rate: rate, mmkRate: mmkRate, isExchangeOpen: isExchangeOpen,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                exchangeRate = rate;
+                updateExchangeRateUI();
+                showToast('✅ Rate set: 1$ = ' + rate + ' Coins');
+            } catch (error) { showToast('❌ Failed', 'error'); }
+        }
+
+        async function adminSetMmkRate() {
+            const rate = parseInt(document.getElementById('adminMmkRate').value);
+            if (!rate || rate < 1) { showToast('Invalid MMK rate', 'error'); return; }
+            try {
+                await db.collection('settings').doc('exchangeRate').set({
+                    rate: exchangeRate, mmkRate: rate, isExchangeOpen: isExchangeOpen,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                mmkRate = rate;
+                updateExchangeRateUI();
+                showToast('✅ 1 USD = ' + rate.toLocaleString() + ' Ks');
+            } catch (error) { showToast('❌ Failed', 'error'); }
+        }
+
+        async function adminToggleExchange() {
+            isExchangeOpen = !isExchangeOpen;
+            try {
+                await db.collection('settings').doc('exchangeRate').set({
+                    rate: exchangeRate, mmkRate: mmkRate, isExchangeOpen: isExchangeOpen,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                updateExchangeStatusUI();
+                showToast(isExchangeOpen ? '✅ Exchange opened' : '🔒 Exchange closed');
+            } catch (error) { showToast('❌ Failed', 'error'); }
+        }
+
+        function openExchangeFromMarket() {
+            if (!isExchangeOpen) {
+                showToast('🔒 Exchange ပိတ်ထားပါသည်', 'warning');
+                return;
+            }
+            openModal('exchangeModal');
+        }
+
+        function toggleAuth(mode) {
+            document.getElementById('loginForm').style.display = mode === 'login' ? 'block' : 'none';
+            document.getElementById('signupForm').style.display = mode === 'signup' ? 'block' : 'none';
+            document.getElementById('authError').classList.remove('show');
+        }
+        function showAuthError(msg) {
+            const el = document.getElementById('authError');
+            el.textContent = msg;
+            el.classList.add('show');
+        }
+        async function handleSignup() {
+            const username = document.getElementById('signupUsername').value.trim() || 'User';
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+
+            if (!email || !password) { showAuthError('Email & Password required'); return; }
+            if (password.length < 6) { showAuthError('Password min 6 chars'); return; }
+
+            try {
+                const cred = await auth.createUserWithEmailAndPassword(email, password);
+                await db.collection('users').doc(cred.user.uid).set({
+                    username: username, email: email, coins: 1000, usdt: 0,
+                    isBanned: false, isAutoBanned: false,
+                    lastActive: firebase.firestore.FieldValue.serverTimestamp(),
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                await db.collection('transactions').add({
+                    userId: cred.user.uid, type: 'welcome_bonus', amount: 1000,
+                    description: 'Welcome Bonus',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                saveCoinsToLocal(1000);
+                showToast('✅ Account created!');
+                toggleAuth('login');
+            } catch (e) { showAuthError(e.message); }
+        }
+        async function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            if (!email || !password) { showAuthError('Email & Password required'); return; }
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                showToast('✅ Welcome back!');
+            } catch (e) { showAuthError(e.message); }
+        }
+        function handleLogout() {
+            auth.signOut();
+            showToast('👋 Logged out');
+        }
+
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('authScreen').classList.remove('active');
+                document.getElementById('appContainer').classList.add('active');
+
+                try {
+                    const doc = await db.collection('users').doc(user.uid).get();
+                    if (doc.exists) {
+                        const data = doc.data();
+                        if (data.isBanned) {
+                            await auth.signOut();
+                            showToast('⛔ Banned', 'error');
+                            return;
+                        }
+                        userData.coins = data.coins || 0;
+                        userData.username = data.username || 'User';
+                        userData.email = data.email || '';
+                        userData.usdt = data.usdt || 0;
+                        saveCoinsToLocal(userData.coins);
+                        updateUI();
+                    }
+                } catch (error) {}
+
+                await loadExchangeRate();
+                await loadAdLinksFromFirestore();
+                await loadAppLinksFromFirestore();
+
+                db.collection('settings').doc('exchangeRate').onSnapshot((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        exchangeRate = data.rate || 3000;
+                        mmkRate = data.mmkRate || 0;
+                        isExchangeOpen = data.isExchangeOpen !== false;
+                        updateExchangeRateUI();
+                        updateExchangeStatusUI();
+                    }
+                });
+
+                db.collection('users').doc(user.uid).update({
+                    lastActive: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(() => {});
+
+                renderAdCards();
+                updateDailyBonusUI();
+                loadDashboard();
+
+                setInterval(() => { updateDailyBonusUI(); }, 60000);
+                setInterval(() => { loadDashboard(); }, 60000);
+                setInterval(() => saveCoinsToLocal(userData.coins), 60000);
+
+            } else {
+                currentUser = null;
+                document.getElementById('authScreen').classList.add('active');
+                document.getElementById('appContainer').classList.remove('active');
+            }
+        });
+
+        async function loadAdLinksFromFirestore() {
+            try {
+                const doc = await db.collection('settings').doc('adLinks').get();
+                if (doc.exists && doc.data().links && doc.data().links.length > 0) {
+                    adLinks = doc.data().links;
+                    localStorage.setItem('adLinks', JSON.stringify(adLinks));
+                } else {
+                    adLinks = JSON.parse(localStorage.getItem('adLinks')) || [];
+                }
+                renderAdCards();
+            } catch (error) {
+                adLinks = JSON.parse(localStorage.getItem('adLinks')) || [];
+                renderAdCards();
+            }
+        }
+        async function loadAppLinksFromFirestore() {
+            try {
+                const doc = await db.collection('settings').doc('appLinks').get();
+                if (doc.exists && doc.data().links && doc.data().links.length > 0) {
+                    appLinks = doc.data().links;
+                    localStorage.setItem('appLinks', JSON.stringify(appLinks));
+                } else {
+                    appLinks = JSON.parse(localStorage.getItem('appLinks')) || [];
+                }
+            } catch (error) {
+                appLinks = JSON.parse(localStorage.getItem('appLinks')) || [];
+            }
+        }
+
+        function saveCoinsToLocal(coins) {
+            if (!currentUser) return;
+            try {
+                localStorage.setItem('userCoins_' + currentUser.uid, JSON.stringify({
+                    userId: currentUser.uid, coins: coins, timestamp: Date.now()
+                }));
+            } catch (e) {}
+        }
+        function getCoinsFromLocal() {
+            if (!currentUser) return null;
+            try {
+                const data = localStorage.getItem('userCoins_' + currentUser.uid);
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    if (Date.now() - parsed.timestamp < 604800000) return parsed.coins;
+                }
+            } catch (e) {}
+            return null;
+        }
+        function saveTransactionLocal(type, amount, description) {
+            if (!currentUser) return;
+            try {
+                const transactions = JSON.parse(localStorage.getItem('localTransactions_' + currentUser.uid) || '[]');
+                transactions.push({ type, amount, description, timestamp: Date.now(), synced: false });
+                if (transactions.length > 100) transactions.splice(0, transactions.length - 100);
+                localStorage.setItem('localTransactions_' + currentUser.uid, JSON.stringify(transactions));
+            } catch (e) {}
+        }
+        async function syncLocalTransactions() {
+            if (!currentUser) return;
+            try {
+                const transactions = JSON.parse(localStorage.getItem('localTransactions_' + currentUser.uid) || '[]');
+                const unsynced = transactions.filter(t => !t.synced);
+                if (unsynced.length === 0) return;
+                for (const tx of unsynced) {
+                    try {
+                        await db.collection('transactions').add({
+                            userId: currentUser.uid, type: tx.type, amount: tx.amount,
+                            description: tx.description, timestamp: new Date(tx.timestamp)
+                        });
+                        tx.synced = true;
+                    } catch (error) {
+                        if (error.code === 'resource-exhausted') break;
+                    }
+                }
+                localStorage.setItem('localTransactions_' + currentUser.uid, JSON.stringify(transactions));
+            } catch (e) {}
+        }
+        function showLocalModeIndicator(show) {
+            const el = document.getElementById('localModeIndicator');
+            if (show) el.classList.add('show');
+            else el.classList.remove('show');
+        }
+
+        let adminTapCount = 0;
+        let adminTapTimeout = null;
+
+        function handleAdminLockClick() {
+            adminTapCount++;
+            const counter = document.getElementById('tapCounter');
+            counter.textContent = adminTapCount;
+            counter.style.opacity = '1';
+
+            clearTimeout(adminTapTimeout);
+            adminTapTimeout = setTimeout(() => {
+                adminTapCount = 0;
+                counter.textContent = '0';
+                counter.style.opacity = '0';
+            }, 3000);
+
+            if (adminTapCount >= 12) {
+                adminTapCount = 0;
+                counter.textContent = '0';
+                counter.style.opacity = '0';
+                clearTimeout(adminTapTimeout);
+                showToast('🔓 Admin Panel!', 'success');
+                openModal('adminModal');
+            }
+        }
+
+        let isDark = true;
+        function toggleTheme() {
+            isDark = !isDark;
+            document.body.classList.toggle('light-mode', !isDark);
+            const icon = document.querySelector('#themeToggleBtn i');
+            if (icon) icon.className = isDark ? 'fas fa-moon' : 'fas fa-sun';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+        if (localStorage.getItem('theme') === 'light') {
+            isDark = false;
+            document.body.classList.add('light-mode');
+            document.querySelector('#themeToggleBtn i').className = 'fas fa-sun';
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('show'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+        document.querySelectorAll('.modal').forEach(el => {
+            el.addEventListener('click', (e) => {
+                if (e.target === el && el.id !== 'adModal') el.classList.remove('show');
+            });
+        });
+        function openHistoryModal() {
+            openModal('historyModal');
+            setTimeout(loadTransactionHistory, 300);
+        }
+
+        function uploadProfileImg(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                localStorage.setItem('profileImg', e.target.result);
+                document.getElementById('profileImg').src = e.target.result;
+                document.getElementById('headerAvatar').src = e.target.result;
+                showToast('✅ Profile updated');
+            };
+            reader.readAsDataURL(file);
+        }
+        async function updateProfile() {
+            const name = document.getElementById('profileName').value.trim();
+            if (!name) return;
+            if (currentUser) {
+                await db.collection('users').doc(currentUser.uid).update({ username: name });
+                userData.username = name;
+                updateUI();
+                showToast('✅ Name updated');
+            }
+        }
+
+        async function loadTransactionHistory() {
+            const container = document.getElementById('transactionList');
+            if (!currentUser) return;
+            try {
+                let transactions = [];
+                const snapshot = await db.collection('transactions')
+                    .where('userId', '==', currentUser.uid)
+                    .limit(50).get();
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    let date = new Date();
+                    if (data.timestamp && data.timestamp.seconds) date = new Date(data.timestamp.seconds * 1000);
+                    transactions.push({ ...data, _date: date });
+                });
+
+                if (transactions.length === 0) {
+                    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-3);">No transactions</div>';
+                    return;
+                }
+
+                transactions.sort((a, b) => b._date - a._date);
+                let html = '';
+                const typeMap = {
+                    'ad_watch': { icon: '📺', label: 'Ad Watch' },
+                    'daily_bonus': { icon: '🎁', label: 'Daily Bonus' },
+                    'welcome_bonus': { icon: '🎉', label: 'Welcome' },
+                    'top_viewer_bonus': { icon: '🏆', label: 'Top Viewer' },
+                    'exchange': { icon: '🔄', label: 'Exchange' },
+                    'admin_add': { icon: '➕', label: 'Admin Added' },
+                    'admin_remove': { icon: '➖', label: 'Admin Removed' },
+                    'withdraw': { icon: '🏦', label: 'Withdraw' },
+                    'gift_sent': { icon: '🎁', label: 'Gift Sent' },
+                    'gift_received': { icon: '🎁', label: 'Gift Received' }
+                };
+                transactions.forEach(item => {
+                    const type = typeMap[item.type] || { icon: '📝', label: item.type };
+                    const amount = item.amount || 0;
+                    const isPositive = amount > 0;
+                    html += `
+                        <div class="transaction-item">
+                            <div class="left">
+                                <div class="type">${type.icon} ${type.label}</div>
+                                <div class="detail">${item.description || ''}</div>
+                                <div class="date">${item._date.toLocaleString()}</div>
+                            </div>
+                            <div class="right ${isPositive ? 'positive' : 'negative'}">${isPositive ? '+' : ''}${amount}</div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-3);">Failed</div>';
+            }
+        }
+
+        function setExchangeAmount(val) {
+            document.getElementById('exchangeInput').value = val;
+            calculateExchange();
+        }
+        function calculateExchange() {
+            const amt = parseInt(document.getElementById('exchangeInput').value) || 0;
+            const result = document.getElementById('exchangeUsdt');
+            if (amt <= 0) { result.textContent = '$0.00'; return; }
+            if (amt > (userData.coins || 0)) { result.textContent = 'Insufficient'; result.style.color = 'var(--red)'; return; }
+            const usdt = amt / exchangeRate;
+            result.textContent = '$' + usdt.toFixed(2);
+            result.style.color = 'var(--green)';
+        }
+        async function confirmExchange() {
+            if (!isExchangeOpen) { showToast('🔒 Exchange ပိတ်ထားပါသည်', 'error'); return; }
+            const amt = parseInt(document.getElementById('exchangeInput').value) || 0;
+            if (amt <= 0 || amt > (userData.coins || 0)) { showToast('Invalid amount', 'error'); return; }
+            const usdt = amt / exchangeRate;
+            if (!confirm(`${amt} Coins → $${usdt.toFixed(2)}?`)) return;
+            if (currentUser) {
+                userData.coins -= amt;
+                userData.usdt += usdt;
+                saveCoinsToLocal(userData.coins);
+                updateUI();
+                try {
+                    await db.collection('users').doc(currentUser.uid).update({
+                        coins: firebase.firestore.FieldValue.increment(-amt),
+                        usdt: firebase.firestore.FieldValue.increment(usdt)
+                    });
+                    await db.collection('transactions').add({
+                        userId: currentUser.uid, type: 'exchange', amount: -amt,
+                        description: `${amt} Coins → $${usdt.toFixed(2)} USDT`,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } catch (e) {}
+                showToast(`✅ $${usdt.toFixed(2)}`);
+                closeModal('exchangeModal');
+            }
+        }
+
+        async function requestWithdraw() {
+            if (!isWithdrawOpen) { showToast('❌ Locked', 'error'); return; }
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            if (!amount || amount < 5) { showToast('❌ Min 5 USDT', 'error'); return; }
+            if (amount > (userData.usdt || 0)) { showToast('❌ Insufficient', 'error'); return; }
+            try {
+                await db.collection('withdrawals').add({
+                    userId: currentUser.uid, username: userData.username || 'User',
+                    email: userData.email || '', amount: amount, status: 'pending',
+                    requestedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                showToast('✅ Withdraw requested');
+                document.getElementById('withdrawAmount').value = '';
+            } catch (e) { showToast('❌ Failed', 'error'); }
+        }
+
+        async function sendCoinGift() {
+            const receiverEmail = document.getElementById('giftReceiverEmail').value.trim();
+            const amount = parseInt(document.getElementById('giftAmount').value);
+            const msgEl = document.getElementById('giftMsg');
+
+            if (!receiverEmail || !amount || amount < 1) { msgEl.textContent = '❌ Fill all'; msgEl.style.color = 'var(--red)'; return; }
+            const totalCost = amount + GIFT_FEE;
+            if (userData.coins < totalCost) { msgEl.textContent = '❌ Need ' + totalCost; msgEl.style.color = 'var(--red)'; return; }
+
+            try {
+                const snapshot = await db.collection('users').where('email', '==', receiverEmail).get();
+                if (snapshot.empty) { msgEl.textContent = '❌ Not found'; msgEl.style.color = 'var(--red)'; return; }
+                const receiverDoc = snapshot.docs[0];
+                userData.coins -= totalCost;
+                saveCoinsToLocal(userData.coins);
+                updateUI();
+
+                await db.runTransaction(async (transaction) => {
+                    const sRef = db.collection('users').doc(currentUser.uid);
+                    const rRef = db.collection('users').doc(receiverDoc.id);
+                    const sDoc = await transaction.get(sRef);
+                    const rDoc = await transaction.get(rRef);
+                    transaction.update(sRef, { coins: (sDoc.data().coins || 0) - totalCost });
+                    transaction.update(rRef, { coins: (rDoc.data().coins || 0) + amount });
+                });
+
+                msgEl.textContent = '✅ Sent';
+                msgEl.style.color = 'var(--green)';
+                showToast('🎁 Sent!', 'success');
+            } catch (error) { msgEl.textContent = '❌ Failed'; msgEl.style.color = 'var(--red)'; }
+        }
+
+        function verifyAdmin() {
+            const id = document.getElementById('adminIdInput').value.trim();
+            if (ADMIN_IDS.includes(id)) {
+                isAdmin = true;
+                document.getElementById('adminLogin').style.display = 'none';
+                document.getElementById('adminDashboard').style.display = 'block';
+                document.getElementById('adminRate').value = exchangeRate;
+                document.getElementById('toggleWithdrawBtn').textContent = isWithdrawOpen ? '🔒 Close' : '🔓 Open';
+                updateExchangeStatusUI();
+                updateExchangeRateUI();
+                loadAdminUsers();
+                loadWithdrawRequests();
+                loadAppList();
+                loadAdList();
+                showToast('✅ Admin logged in');
+                closeModal('adminModal');
+            } else { showToast('Invalid Admin ID', 'error'); }
+        }
+        function adminLogout() {
+            isAdmin = false;
+            document.getElementById('adminLogin').style.display = 'block';
+            document.getElementById('adminDashboard').style.display = 'none';
+            showToast('👋 Logged out');
+        }
+
+        function loadAppList() {
+            const tbody = document.getElementById('appListBody');
+            if (!tbody) return;
+            const links = JSON.parse(localStorage.getItem('appLinks')) || [];
+            if (links.length === 0) { tbody.innerHTML = '<tr><td colspan="2" style="color:var(--text-3);text-align:center;">Empty</td></tr>'; return; }
+            let html = '';
+            links.forEach((link, i) => {
+                const d = link.length > 30 ? link.substring(0, 30) + '...' : link;
+                html += `<tr><td style="font-size:10px;text-align:left;"><a href="${link}" target="_blank" style="color:var(--neon-1);">${d}</a></td><td><button class="btn-sm red" onclick="adminRemoveAppLink(${i})" style="padding:4px 8px;font-size:9px;">✕</button></td></tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+        async function adminAddAppLink() {
+            const link = document.getElementById('adminAppLink').value.trim();
+            if (!link) return;
+            let links = JSON.parse(localStorage.getItem('appLinks')) || [];
+            links.push(link);
+            localStorage.setItem('appLinks', JSON.stringify(links));
+            appLinks = links;
+            document.getElementById('adminAppLink').value = '';
+            loadAppList();
+            try { await db.collection('settings').doc('appLinks').set({ links: links }); } catch (e) {}
+            showToast('✅ Added');
+        }
+        async function adminRemoveAppLink(i) {
+            if (!confirm('Delete?')) return;
+            let links = JSON.parse(localStorage.getItem('appLinks')) || [];
+            links.splice(i, 1);
+            localStorage.setItem('appLinks', JSON.stringify(links));
+            appLinks = links;
+            loadAppList();
+            try { await db.collection('settings').doc('appLinks').set({ links: links }); } catch (e) {}
+        }
+
+        function loadAdList() {
+            const tbody = document.getElementById('adListBody');
+            if (!tbody) return;
+            const links = JSON.parse(localStorage.getItem('adLinks')) || [];
+            if (links.length === 0) { tbody.innerHTML = '<tr><td colspan="2" style="color:var(--text-3);text-align:center;">Empty</td></tr>'; return; }
+            let html = '';
+            links.forEach((link, i) => {
+                const d = link.length > 30 ? link.substring(0, 30) + '...' : link;
+                html += `<tr><td style="font-size:10px;text-align:left;"><a href="${link}" target="_blank" style="color:var(--neon-1);">${d}</a></td><td><button class="btn-sm red" onclick="adminRemoveAdLink(${i})" style="padding:4px 8px;font-size:9px;">✕</button></td></tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+        async function adminAddAdLink() {
+            const link = document.getElementById('adminAdLink').value.trim();
+            if (!link) return;
+            let links = JSON.parse(localStorage.getItem('adLinks')) || [];
+            links.push(link);
+            localStorage.setItem('adLinks', JSON.stringify(links));
+            adLinks = links;
+            document.getElementById('adminAdLink').value = '';
+            loadAdList();
+            try { await db.collection('settings').doc('adLinks').set({ links: links }); } catch (e) {}
+            renderAdCards();
+            showToast('✅ Added');
+        }
+        async function adminRemoveAdLink(i) {
+            if (!confirm('Delete?')) return;
+            let links = JSON.parse(localStorage.getItem('adLinks')) || [];
+            links.splice(i, 1);
+            localStorage.setItem('adLinks', JSON.stringify(links));
+            adLinks = links;
+            loadAdList();
+            try { await db.collection('settings').doc('adLinks').set({ links: links }); } catch (e) {}
+            renderAdCards();
+        }
+
+        function adminToggleWithdraw() {
+            isWithdrawOpen = !isWithdrawOpen;
+            localStorage.setItem('isWithdrawOpen', isWithdrawOpen);
+            document.getElementById('toggleWithdrawBtn').textContent = isWithdrawOpen ? '🔒 Close' : '🔓 Open';
+            updateWithdrawUI();
+        }
+        function adminSetWithdrawDate() {
+            const date = document.getElementById('adminWithdrawDate').value;
+            if (!date) return;
+            withdrawDate = date;
+            localStorage.setItem('withdrawDate', date);
+            const today = new Date().toISOString().split('T')[0];
+            if (date <= today) {
+                isWithdrawOpen = true;
+                localStorage.setItem('isWithdrawOpen', 'true');
+            } else {
+                isWithdrawOpen = false;
+                localStorage.setItem('isWithdrawOpen', 'false');
+            }
+            updateWithdrawUI();
+            showToast('✅ Date set');
+        }
+
+        async function adminAddCoin() {
+            const email = document.getElementById('adminTargetEmail').value.trim();
+            const amount = parseInt(document.getElementById('adminCoinAmount').value);
+            const msg = document.getElementById('adminCoinMsg');
+            if (!email || !amount) { msg.textContent = '❌ Fill'; msg.style.color = 'var(--red)'; return; }
+            const snap = await db.collection('users').where('email', '==', email).limit(1).get();
+            if (snap.empty) { msg.textContent = '❌ Not found'; msg.style.color = 'var(--red)'; return; }
+            await db.collection('users').doc(snap.docs[0].id).update({ coins: firebase.firestore.FieldValue.increment(amount) });
+            msg.textContent = '✅ +' + amount;
+            msg.style.color = 'var(--green)';
+        }
+        async function adminRemoveCoin() {
+            const email = document.getElementById('adminTargetEmail').value.trim();
+            const amount = parseInt(document.getElementById('adminCoinAmount').value);
+            const msg = document.getElementById('adminCoinMsg');
+            if (!email || !amount) { msg.textContent = '❌ Fill'; msg.style.color = 'var(--red)'; return; }
+            const snap = await db.collection('users').where('email', '==', email).limit(1).get();
+            if (snap.empty) { msg.textContent = '❌ Not found'; msg.style.color = 'var(--red)'; return; }
+            await db.collection('users').doc(snap.docs[0].id).update({ coins: firebase.firestore.FieldValue.increment(-amount) });
+            msg.textContent = '✅ -' + amount;
+            msg.style.color = 'var(--red)';
+        }
+
+        async function loadAdminUsers() {
+            const table = document.getElementById('adminUserTable');
+            table.innerHTML = '<tr><td colspan="4" style="color:var(--text-3);text-align:center;"><i class="fas fa-spinner fa-spin"></i></td></tr>';
+            try {
+                const snap = await db.collection('users').limit(30).get();
+                const countEl = document.getElementById('userCount');
+                if (countEl) countEl.textContent = snap.size;
+                let html = '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    html += `
+                        <tr>
+                            <td><strong>${d.username || 'User'}</strong><br><span style="font-size:9px;color:var(--text-3);">${d.email || ''}</span></td>
+                            <td><strong>${d.coins || 0}</strong></td>
+                            <td><strong>${(d.usdt || 0).toFixed(2)}</strong></td>
+                            <td><button class="btn-sm ${d.isBanned ? 'green' : 'red'}" onclick="toggleBan('${doc.id}')" style="padding:4px 8px;font-size:9px;">${d.isBanned ? 'Unban' : 'Ban'}</button></td>
+                        </tr>
+                    `;
+                });
+                table.innerHTML = html;
+            } catch (e) {
+                table.innerHTML = '<tr><td colspan="4" style="color:var(--red);text-align:center;">Error</td></tr>';
+            }
+        }
+        async function searchUserByEmail() {
+            const email = document.getElementById('userSearchInput').value.trim();
+            if (!email) return;
+            const table = document.getElementById('adminUserTable');
+            const snap = await db.collection('users').where('email', '==', email).limit(1).get();
+            if (snap.empty) {
+                table.innerHTML = '<tr><td colspan="4" style="color:var(--text-3);text-align:center;">Not found</td></tr>';
+                return;
+            }
+            const doc = snap.docs[0];
+            const d = doc.data();
+            table.innerHTML = `
+                <tr>
+                    <td><strong>${d.username}</strong><br><span style="font-size:9px;color:var(--text-3);">${d.email}</span></td>
+                    <td>${d.coins || 0}</td>
+                    <td>${(d.usdt || 0).toFixed(2)}</td>
+                    <td><button class="btn-sm ${d.isBanned ? 'green' : 'red'}" onclick="toggleBan('${doc.id}')">${d.isBanned ? 'Unban' : 'Ban'}</button></td>
+                </tr>
+            `;
+        }
+        function clearUserSearch() {
+            document.getElementById('userSearchInput').value = '';
+            loadAdminUsers();
+        }
+        async function toggleBan(uid) {
+            const doc = await db.collection('users').doc(uid).get();
+            if (!doc.exists) return;
+            const current = doc.data().isBanned || false;
+            await db.collection('users').doc(uid).update({ isBanned: !current });
+            showToast(`✅ ${current ? 'Unbanned' : 'Banned'}`);
+            loadAdminUsers();
+        }
+        async function loadWithdrawRequests() {
+            const tbody = document.getElementById('withdrawRequestsBody');
+            try {
+                const snap = await db.collection('withdrawals').orderBy('requestedAt', 'desc').limit(20).get();
+                if (snap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="color:var(--text-3);text-align:center;">None</td></tr>';
+                    return;
+                }
+                let html = '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    html += `
+                        <tr>
+                            <td><strong>${d.username}</strong></td>
+                            <td>$${d.amount.toFixed(2)}</td>
+                            <td>${d.status === 'pending' ? '⏳' : d.status === 'approved' ? '✅' : '❌'}</td>
+                            <td>${d.status === 'pending' ? `
+                                <button class="btn-sm green" onclick="approveWithdraw('${doc.id}', ${d.amount})" style="padding:3px 6px;font-size:9px;">✓</button>
+                                <button class="btn-sm red" onclick="rejectWithdraw('${doc.id}')" style="padding:3px 6px;font-size:9px;">✕</button>
+                            ` : '✓'}</td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            } catch (e) {}
+        }
+        async function approveWithdraw(id, amount) {
+            if (!confirm('Approve?')) return;
+            const doc = await db.collection('withdrawals').doc(id).get();
+            const data = doc.data();
+            await db.collection('users').doc(data.userId).update({ usdt: firebase.firestore.FieldValue.increment(-amount) });
+            await db.collection('withdrawals').doc(id).update({ status: 'approved' });
+            showToast('✅ Approved');
+            loadWithdrawRequests();
+        }
+        async function rejectWithdraw(id) {
+            if (!confirm('Reject?')) return;
+            await db.collection('withdrawals').doc(id).update({ status: 'rejected' });
+            showToast('❌ Rejected');
+            loadWithdrawRequests();
+        }
+
+        function switchNav(tab, el) {
+            document.querySelectorAll('.nav-btn').forEach(e => e.classList.remove('active'));
+            if (el) el.classList.add('active');
+            if (tab === 'home') loadDashboard();
+        }
+
+        function showToast(msg, type = 'success') {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.className = 'toast show ' + type;
+            clearTimeout(el._timeout);
+            el._timeout = setTimeout(() => el.classList.remove('show'), 3500);
+        }
+
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('splash').classList.add('hide');
+                setTimeout(() => { document.getElementById('splash').style.display = 'none'; }, 800);
+            }, 1500);
+        });
+
+        updateUI();
+        renderAdCards();
+        updateDailyBonusUI();
+
+        console.log('✅ App loaded with In-App Ad Page');
+        console.log('✅ Ad 50 ads → Bonus 1500 with Progress Bar');
+        console.log('✅ Exchange Open/Close + MMK Rate');
+    </script>
+</body>
+</html>
