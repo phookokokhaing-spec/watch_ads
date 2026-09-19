@@ -475,7 +475,228 @@ th { background: linear-gradient(135deg, rgba(178, 75, 255, 0.2), rgba(124, 58, 
     .modal-content { border-radius: var(--r-xl); max-width: 600px; }
     .ach-grid { grid-template-columns: repeat(6, 1fr); }
 }
-    </style>
+    
+/* ===== NOVA PRO VISUAL REFRESH ===== */
+:root{
+    --bg-0:#040712;
+    --bg-1:#071022;
+    --bg-2:#0d1830;
+    --bg-3:#132448;
+    --glass:rgba(12,24,48,.78);
+    --glass-border:rgba(83,210,255,.18);
+    --neon-1:#9b5cff;
+    --neon-2:#6840e8;
+    --neon-3:#31e7ff;
+    --neon-4:#ff3fa4;
+    --gold-1:#ffe27a;
+    --gold-2:#ffc247;
+    --gold-3:#ff9f1c;
+    --green:#39f5a3;
+    --green-2:#16c982;
+}
+body{
+    background:
+      radial-gradient(circle at 12% 0%,rgba(155,92,255,.20),transparent 34%),
+      radial-gradient(circle at 92% 92%,rgba(49,231,255,.13),transparent 32%),
+      linear-gradient(145deg,#030610,#071022 55%,#050914);
+}
+.top-bar-inner{
+    background:linear-gradient(135deg,rgba(16,30,58,.94),rgba(8,18,38,.97));
+    border-color:rgba(49,231,255,.20);
+    box-shadow:0 8px 30px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.05);
+}
+.ad-card{
+    background:linear-gradient(145deg,rgba(18,32,62,.97),rgba(8,18,39,.99));
+    border-color:rgba(255,255,255,.04);
+    box-shadow:0 8px 0 rgba(0,0,0,.34),0 16px 35px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.05);
+}
+.ad-card::before{
+    background:linear-gradient(135deg,var(--neon-1),var(--neon-3),var(--neon-4));
+    opacity:.52;
+}
+.ad-card.available::before{
+    background:linear-gradient(135deg,var(--green),var(--neon-3),var(--neon-1));
+    opacity:.72;
+}
+.ad-reward{
+    background:rgba(255,194,71,.06);
+    border:1px solid rgba(255,194,71,.12);
+    border-radius:14px;
+    padding:7px 10px;
+}
+.ad-btn{
+    min-height:44px;
+    font-weight:900;
+    letter-spacing:.2px;
+}
+.ad-btn.watch{
+    background:linear-gradient(135deg,#9b5cff,#6840e8)!important;
+    box-shadow:0 4px 0 #4526a5,0 8px 20px rgba(104,64,232,.28);
+}
+.ad-btn.download{
+    background:linear-gradient(135deg,#31e7ff,#168ecf)!important;
+    box-shadow:0 4px 0 #0b5f8b,0 8px 20px rgba(49,231,255,.20);
+}
+.ad-page-footer{
+    background:linear-gradient(180deg,rgba(7,16,34,.98),rgba(3,8,18,1));
+    border-top:1px solid rgba(49,231,255,.12);
+}
+#adPage .ad-page-claim-btn.active{
+    background:linear-gradient(135deg,var(--gold-1),var(--gold-3))!important;
+    color:#17100a!important;
+    box-shadow:0 5px 0 #a76b0b,0 0 28px rgba(255,194,71,.28);
+}
+
+
+/* ============================================================
+   NOVA v2 — CLEAN "MIDNIGHT BLUE" REDESIGN
+   Replaces the previous purple/gold casino-heavy visual language.
+   ============================================================ */
+:root {
+    --bg-0:#06101c;
+    --bg-1:#091827;
+    --bg-2:#0d2032;
+    --bg-3:#12304a;
+    --glass:rgba(12,31,49,.92);
+    --glass-border:rgba(76,205,255,.14);
+    --neon-1:#31d7ff;
+    --neon-2:#168ecf;
+    --neon-3:#62f6df;
+    --neon-4:#6c7cff;
+    --gold-1:#ffd166;
+    --gold-2:#ffb84d;
+    --gold-3:#f59e0b;
+    --green:#39e6a5;
+    --green-2:#18b77e;
+    --red:#ff5f73;
+    --red-2:#e43b55;
+    --text-1:#f5fbff;
+    --text-2:rgba(231,244,252,.74);
+    --text-3:rgba(193,216,229,.46);
+    --r-sm:12px;
+    --r-md:16px;
+    --r-lg:20px;
+    --r-xl:26px;
+}
+body{
+    background:#06101c;
+    background-image:
+      radial-gradient(circle at 8% 0%,rgba(49,215,255,.13),transparent 34%),
+      radial-gradient(circle at 100% 92%,rgba(108,124,255,.12),transparent 34%);
+}
+#casinoCanvas{opacity:.18}
+.bg-layer .orb{filter:blur(120px);opacity:.18!important}
+.bg-layer .orb-1{background:radial-gradient(circle,#31d7ff,transparent 70%)}
+.bg-layer .orb-2{background:radial-gradient(circle,#6c7cff,transparent 70%)}
+.bg-layer .orb-3{background:radial-gradient(circle,#39e6a5,transparent 70%)}
+
+header,.top-header,.app-header{
+    background:rgba(6,16,28,.82)!important;
+    border-bottom:1px solid rgba(76,205,255,.10)!important;
+    box-shadow:0 8px 30px rgba(0,0,0,.18)!important;
+    backdrop-filter:blur(22px)!important;
+}
+.logo,.brand,.app-logo{
+    letter-spacing:.5px!important;
+}
+.card,.glass-card,.section-card,.quick-btn,.ad-card,.dash-card,.ref-card,.ach-card,
+.modal-content,.profile-card,.exchange-card{
+    background:linear-gradient(145deg,rgba(14,38,59,.96),rgba(8,23,38,.96))!important;
+    border:1px solid rgba(76,205,255,.12)!important;
+    box-shadow:0 12px 32px rgba(0,0,0,.22)!important;
+    backdrop-filter:blur(14px);
+}
+.quick-actions{gap:10px!important}
+.quick-btn{
+    border-radius:16px!important;
+    transform:none!important;
+}
+.q-icon{
+    box-shadow:none!important;
+    border:1px solid rgba(255,255,255,.08)!important;
+}
+.q-icon.purple,.q-icon.cyan{background:linear-gradient(135deg,#168ecf,#31d7ff)!important}
+.q-icon.gold{background:linear-gradient(135deg,#d98d18,#ffd166)!important}
+.q-icon.green{background:linear-gradient(135deg,#13966b,#39e6a5)!important}
+
+.section-title i{color:var(--neon-1)!important}
+.section-more{color:var(--neon-1)!important}
+
+.ad-card{
+    border-radius:18px!important;
+    padding:15px!important;
+    overflow:hidden;
+}
+.ad-card::before{background:linear-gradient(90deg,#31d7ff,#6c7cff)!important;opacity:.75!important}
+.ad-card .reward,.coin,.coin-value{
+    color:#ffd166!important;
+}
+button,.btn,.claim-btn,.level-claim-btn,.ad-page-claim-btn.active{
+    border-radius:14px!important;
+    box-shadow:0 5px 18px rgba(49,215,255,.18)!important;
+}
+.claim-btn,.level-claim-btn{
+    background:linear-gradient(135deg,#168ecf,#31d7ff)!important;
+    color:#04111d!important;
+    animation:none!important;
+}
+.claim-btn.locked,.level-claim-btn:disabled{
+    background:rgba(87,111,126,.22)!important;
+    color:var(--text-3)!important;
+    box-shadow:none!important;
+}
+.progress-bg{background:rgba(255,255,255,.07)!important}
+.progress-fill{background:linear-gradient(90deg,#168ecf,#31d7ff,#62f6df)!important;box-shadow:0 0 16px rgba(49,215,255,.35)!important}
+.progress-fill.complete{background:linear-gradient(90deg,#18b77e,#62f6df)!important}
+
+.bottom-nav{
+    background:rgba(5,15,26,.94)!important;
+    border-top:1px solid rgba(76,205,255,.12)!important;
+    border-radius:20px 20px 0 0!important;
+    box-shadow:0 -12px 35px rgba(0,0,0,.28)!important;
+}
+.bottom-nav .nav-item.active,.bottom-nav .active{
+    color:#31d7ff!important;
+}
+.bottom-nav i{filter:none!important}
+
+#splash{
+    background:radial-gradient(circle at 50% 35%,#103a58 0%,#071522 52%,#040b12 100%)!important;
+}
+#splash .logo{
+    background:linear-gradient(135deg,#fff,#31d7ff 45%,#62f6df 75%,#fff)!important;
+    background-size:200% 200%!important;
+}
+
+#toast,.toast{
+    background:rgba(8,24,38,.96)!important;
+    border:1px solid rgba(49,215,255,.18)!important;
+    box-shadow:0 12px 35px rgba(0,0,0,.32)!important;
+}
+#adPage{
+    background:#06101c!important;
+}
+#adPage .ad-page-header,
+#adPage .ad-page-footer{
+    background:rgba(7,18,30,.96)!important;
+    border-color:rgba(49,215,255,.12)!important;
+}
+#adPage .ad-page-claim-btn.active{
+    background:linear-gradient(135deg,#18b77e,#62f6df)!important;
+    color:#032019!important;
+}
+.exchange-quick button{
+    background:rgba(18,48,74,.85)!important;
+    border-color:rgba(49,215,255,.16)!important;
+    color:#8feaff!important;
+}
+input,select,textarea{
+    background:rgba(5,18,30,.72)!important;
+    border:1px solid rgba(76,205,255,.13)!important;
+    color:var(--text-1)!important;
+}
+
+</style>
 </head>
 <body>
 
@@ -721,7 +942,7 @@ th { background: linear-gradient(135deg, rgba(178, 75, 255, 0.2), rgba(124, 58, 
         <div class="section">
             <div class="section-head">
                 <div class="section-title"><i class="fas fa-chart-line"></i> <span data-i18n="dashboard">Dashboard</span></div>
-                <div class="section-more" onclick="loadDashboard()"><i class="fas fa-sync-alt"></i> <span data-i18n="refresh">Refresh</span></div>
+                <div class="section-more" onclick="loadDashboard(true)"><i class="fas fa-sync-alt"></i> <span data-i18n="refresh">Refresh</span></div>
             </div>
             <div class="dash-card">
                 <div class="dash-top" id="topViewerCard">
@@ -1396,13 +1617,13 @@ th { background: linear-gradient(135deg, rgba(178, 75, 255, 0.2), rgba(124, 58, 
 //  FIREBASE SETUP
 // ============================================================
 const firebaseConfig = {
-    apiKey: "AIzaSyCObNT34Y2ZQF1Uncgq8OHB8ab9GQ4ejME",
-    authDomain: "watching-30fbd.firebaseapp.com",
-    projectId: "watching-30fbd",
-    storageBucket: "watching-30fbd.firebasestorage.app",
-    messagingSenderId: "806942164631",
-    appId: "1:806942164631:web:4bfd602ab9d750befb4bd2",
-    measurementId: "G-HB1TBD2T74"
+  apiKey: "AIzaSyDGV4bZIDTrT0zmNw8gZn1l9pTrpNIDgpo",
+  authDomain: "nova-373f4.firebaseapp.com",
+  projectId: "nova-373f4",
+  storageBucket: "nova-373f4.firebasestorage.app",
+  messagingSenderId: "305399539400",
+  appId: "1:305399539400:web:b62036af9ff90f970ce7fd",
+  measurementId: "G-ZR9V0YJXD7"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -1521,6 +1742,7 @@ let isAdPlaying = false;
 let adCardTimers = {};
 let adPageInterval = null;
 let currentAdCard = null;
+let currentAdClaimId = null;
 let isWithdrawOpen = localStorage.getItem('isWithdrawOpen') === 'true';
 let currentLeaderboardType = 'today';
 
@@ -1534,6 +1756,69 @@ function acquireCoinLock() {
     return true;
 }
 function releaseCoinLock() { isUpdatingCoins = false; }
+
+// ============================================================
+//  RETRY-SAFE COIN CLAIM HELPER
+//  Every claim uses a deterministic claim id. A retry after a timeout,
+//  refresh, or duplicate tap can never credit the same reward twice.
+// ============================================================
+async function atomicCoinClaim(claimId, amount, type, description, extraUpdate = {}) {
+    if (!currentUser) throw new Error('Not logged in');
+    const safeAmount = Number(amount) || 0;
+    if (safeAmount <= 0) throw new Error('Invalid amount');
+
+    const userRef = db.collection('users').doc(currentUser.uid);
+    const claimRef = db.collection('coinClaims').doc(claimId);
+
+    const result = await db.runTransaction(async (tx) => {
+        const claimSnap = await tx.get(claimRef);
+        const userSnap = await tx.get(userRef);
+        if (!userSnap.exists) throw new Error('User account not found');
+
+        const user = userSnap.data() || {};
+        if (claimSnap.exists) {
+            const c = claimSnap.data() || {};
+            return {
+                duplicate: true,
+                newCoins: Number(c.newCoins) || Number(user.coins) || 0
+            };
+        }
+
+        const newCoins = (Number(user.coins) || 0) + safeAmount;
+        tx.update(userRef, {
+            coins: newCoins,
+            ...extraUpdate,
+            lastActive: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        tx.set(claimRef, {
+            userId: currentUser.uid,
+            type,
+            amount: safeAmount,
+            newCoins,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        return { duplicate: false, newCoins };
+    });
+
+    try {
+        await db.collection('transactions').doc(claimId).set({
+            userId: currentUser.uid,
+            type,
+            amount: safeAmount,
+            description,
+            claimId,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+    } catch (e) {
+        saveTransactionLocal(type, safeAmount, description);
+    }
+
+    userData.coins = result.newCoins;
+    saveCoinsToLocal(result.newCoins);
+    updateUI();
+    return result;
+}
 function generateRefCode() { return Math.random().toString(36).substring(2, 10).toUpperCase(); }
 
 let audioContext = null;
@@ -1702,38 +1987,34 @@ function updateLevelUI() {
 
 async function claimLevelBonus() {
     const btn = document.getElementById('levelClaimBtn');
-    const level = parseInt(btn.dataset.level);
-    const bonus = parseInt(btn.dataset.bonus);
-    if (!level || !bonus) return;
-    if (userData.claimedLevels && userData.claimedLevels.includes(level)) { showToast('❌ ရယူပြီးပါပြီ', 'error'); return; }
+    const level = parseInt(btn?.dataset.level);
+    const bonus = parseInt(btn?.dataset.bonus);
+    if (!currentUser || !level || !bonus) return;
+
+    if (userData.claimedLevels && userData.claimedLevels.includes(level)) {
+        showToast('❌ ရယူပြီးပါပြီ', 'error'); return;
+    }
     if (!acquireCoinLock()) { showToast('⏳ Please wait', 'warning'); return; }
+
+    const claimId = 'level_' + currentUser.uid + '_' + level;
     try {
-        const newCoins = (userData.coins || 0) + bonus;
-        userData.coins = newCoins;
-        userData.claimedLevels = [...(userData.claimedLevels || []), level];
-        saveCoinsToLocal(newCoins);
-        updateUI();
+        const result = await atomicCoinClaim(
+            claimId, bonus, 'level_bonus', `Level ${level} Bonus`,
+            { claimedLevels: firebase.firestore.FieldValue.arrayUnion(level) }
+        );
+
+        userData.claimedLevels = [...new Set([...(userData.claimedLevels || []), level])];
         updateLevelUI();
-        try {
-            await db.collection('users').doc(currentUser.uid).update({
-                coins: firebase.firestore.FieldValue.increment(bonus),
-                claimedLevels: firebase.firestore.FieldValue.arrayUnion(level)
-            });
-            await db.collection('transactions').add({
-                userId: currentUser.uid, type: 'level_bonus', amount: bonus,
-                description: `Level ${level} Bonus`,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        } catch (e) {}
-        showCoinAnimation(bonus, newCoins);
-        showToast(`🎉 Level ${level} Bonus +${bonus} Coins!`, 'success');
-    } catch (e) { showToast('❌ Failed', 'error'); }
-    finally { setTimeout(() => releaseCoinLock(), 1500); }
+        showCoinAnimation(bonus, result.newCoins);
+        showToast(result.duplicate ? '✅ ရယူပြီးသားပါ' : `🎉 Level ${level} Bonus +${bonus} Coins!`, 'success');
+    } catch (e) {
+        console.error('claimLevelBonus failed:', e);
+        showToast('❌ မအောင်မြင်သေးပါ — ထပ်ကြိုးစားပါ', 'error');
+    } finally {
+        setTimeout(() => releaseCoinLock(), 500);
+    }
 }
 
-// ============================================================
-//  ACHIEVEMENTS
-// ============================================================
 function getAchProgress(ach) {
     if (ach.type === 'ads') return userData.totalAds || 0;
     if (ach.type === 'coins') return userData.coins || 0;
@@ -1769,37 +2050,32 @@ function updateAchievementsUI() {
     }
 }
 async function claimAchievement(id, reward) {
+    if (!currentUser) return;
     if (userData.claimedAch && userData.claimedAch.includes(id)) return;
+
     const ach = ACHIEVEMENTS.find(a => a.id === id);
     if (!ach || getAchProgress(ach) < ach.target) return;
     if (!acquireCoinLock()) return;
+
+    const claimId = 'achievement_' + currentUser.uid + '_' + id;
     try {
-        const newCoins = (userData.coins || 0) + reward;
-        userData.coins = newCoins;
-        userData.claimedAch = [...(userData.claimedAch || []), id];
-        saveCoinsToLocal(newCoins);
-        updateUI();
+        const result = await atomicCoinClaim(
+            claimId, reward, 'achievement', `Achievement: ${ach.title}`,
+            { claimedAch: firebase.firestore.FieldValue.arrayUnion(id) }
+        );
+
+        userData.claimedAch = [...new Set([...(userData.claimedAch || []), id])];
         updateAchievementsUI();
-        try {
-            await db.collection('users').doc(currentUser.uid).update({
-                coins: firebase.firestore.FieldValue.increment(reward),
-                claimedAch: firebase.firestore.FieldValue.arrayUnion(id)
-            });
-            await db.collection('transactions').add({
-                userId: currentUser.uid, type: 'achievement', amount: reward,
-                description: `Achievement: ${ach.title}`,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        } catch (e) {}
-        showCoinAnimation(reward, newCoins);
-        showToast(`🏆 ${ach.title} +${reward} Coins!`, 'success');
-    } catch (e) { showToast('❌ Failed', 'error'); }
-    finally { setTimeout(() => releaseCoinLock(), 1500); }
+        showCoinAnimation(reward, result.newCoins);
+        showToast(result.duplicate ? '✅ ရယူပြီးသားပါ' : `🏆 ${ach.title} +${reward} Coins!`, 'success');
+    } catch (e) {
+        console.error('claimAchievement failed:', e);
+        showToast('❌ မအောင်မြင်သေးပါ — ထပ်ကြိုးစားပါ', 'error');
+    } finally {
+        setTimeout(() => releaseCoinLock(), 500);
+    }
 }
 
-// ============================================================
-//  REFERRAL
-// ============================================================
 function updateReferralUI() {
     document.getElementById('myRefCode').textContent = userData.refCode || '------';
     document.getElementById('refCount').textContent = userData.referralCount || 0;
@@ -2018,6 +2294,8 @@ function startAdTask(cardId) {
     if (!adUrl.startsWith('http')) adUrl = 'https://' + adUrl;
 
     currentAdCard = card;
+    currentAdClaimId = localStorage.getItem('pendingAdClaim') || ('ad_' + currentUser.uid + '_' + card.id + '_' + Date.now() + '_' + Math.random().toString(36).slice(2,8));
+    localStorage.setItem('pendingAdClaim', currentAdClaimId);
     isAdPlaying = true;
 
     const adPage = document.getElementById('adPage');
@@ -2091,6 +2369,7 @@ function closeAdPageAndReturn() {
     if (mainContainer) mainContainer.style.display = 'flex';
     isAdPlaying = false;
     currentAdCard = null;
+    currentAdClaimId = null;
     const progressBar = document.getElementById('adPageProgress');
     if (progressBar) progressBar.style.width = '0%';
     const timerEl = document.getElementById('adPageTimer');
@@ -2098,69 +2377,146 @@ function closeAdPageAndReturn() {
 }
 
 async function claimAdReward() {
-    if (!currentUser || !currentAdCard) return;
-    if (!acquireCoinLock()) { showToast('⏳ Please wait', 'warning'); return; }
+    if (!currentUser || !currentAdCard) {
+        showToast('❌ Reward session မတွေ့ပါ', 'error');
+        return;
+    }
+    if (!acquireCoinLock()) {
+        showToast('⏳ ခဏစောင့်ပြီး ထပ်လုပ်ပါ', 'warning');
+        return;
+    }
+
+    const card = { ...currentAdCard };
+    const reward = Number(card.reward) || 0;
+    const claimKey = currentAdClaimId || ('ad_' + currentUser.uid + '_' + card.id + '_' + Date.now());
+
     try {
-        const reward = currentAdCard.reward;
-        const newCoins = (userData.coins || 0) + reward;
-        const newAds = (userData.totalAds || 0) + 1;
-        userData.coins = newCoins;
-        userData.totalAds = newAds;
-        saveCoinsToLocal(newCoins);
+        if (reward <= 0) throw new Error('Invalid reward');
+
+        const userRef = db.collection('users').doc(currentUser.uid);
+        const claimRef = db.collection('coinClaims').doc(claimKey);
+        const today = new Date().toISOString().split('T')[0];
+        const adWatchRef = db.collection('adWatches').doc(currentUser.uid + '_' + today);
+
+        const result = await db.runTransaction(async (tx) => {
+            // Idempotency: if the same claim is retried after an uncertain
+            // network response, this read prevents a second coin credit.
+            const claimSnap = await tx.get(claimRef);
+            const userSnap = await tx.get(userRef);
+
+            if (!userSnap.exists) throw new Error('User account not found');
+
+            if (claimSnap.exists) {
+                const c = claimSnap.data() || {};
+                return {
+                    duplicate: true,
+                    newCoins: Number(c.newCoins) || Number(userSnap.data().coins) || 0,
+                    newAds: Number(c.newAds) || Number(userSnap.data().totalAds) || 0
+                };
+            }
+
+            const data = userSnap.data() || {};
+            const oldCoins = Number(data.coins) || 0;
+            const oldAds = Number(data.totalAds) || 0;
+            const newCoins = oldCoins + reward;
+            const newAds = oldAds + 1;
+
+            tx.update(userRef, {
+                coins: newCoins,
+                totalAds: newAds,
+                lastActive: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            // One write, no extra get/update round-trip for adWatches.
+            tx.set(adWatchRef, {
+                userId: currentUser.uid,
+                username: userData.username || data.username || 'User',
+                email: userData.email || data.email || '',
+                date: today,
+                count: firebase.firestore.FieldValue.increment(1),
+                totalCoins: firebase.firestore.FieldValue.increment(reward),
+                lastWatch: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+
+            tx.set(claimRef, {
+                userId: currentUser.uid,
+                type: 'ad_watch',
+                cardId: card.id,
+                amount: reward,
+                newCoins,
+                newAds,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            return { duplicate: false, newCoins, newAds };
+        });
+
+        userData.coins = result.newCoins;
+        userData.totalAds = result.newAds;
+        saveCoinsToLocal(result.newCoins);
         updateUI();
         updateLevelUI();
         updateAchievementsUI();
+
+        // History is best-effort and does not affect the idempotent coin claim.
         try {
-            await db.collection('users').doc(currentUser.uid).update({
-                coins: firebase.firestore.FieldValue.increment(reward),
-                totalAds: firebase.firestore.FieldValue.increment(1)
-            });
-            await db.collection('transactions').add({
-                userId: currentUser.uid, type: 'ad_watch', amount: reward,
-                description: `${currentAdCard.title} - ${reward} Coins`,
+            await db.collection('transactions').doc(claimKey).set({
+                userId: currentUser.uid,
+                type: 'ad_watch',
+                amount: reward,
+                description: `${card.title} - ${reward} Coins`,
+                claimId: claimKey,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        } catch (err) { saveTransactionLocal('ad_watch', reward, currentAdCard.title); }
-        await saveAdWatchRecord(reward);
-        localStorage.setItem('adClaim_' + currentAdCard.id + '_' + currentUser.uid, Date.now().toString());
+            }, { merge: true });
+        } catch (txErr) {
+            saveTransactionLocal('ad_watch', reward, card.title);
+        }
+
+        localStorage.removeItem('pendingAdClaim');
+        localStorage.setItem('adClaim_' + card.id + '_' + currentUser.uid, Date.now().toString());
+
         closeAdPageAndReturn();
-        showCoinAnimation(reward, newCoins);
+        showCoinAnimation(reward, result.newCoins);
         renderAdCards();
-        showToast(`✅ +${reward} Coins ရပါပြီ!`, 'success');
-        loadDashboard();
-    } catch (error) { showToast('❌ Failed', 'error'); closeAdPageAndReturn(); }
-    finally { setTimeout(() => { releaseCoinLock(); syncLocalTransactions(); }, 1500); }
+
+        if (result.duplicate) {
+            showToast('✅ ဒီ Claim ကို အရင်ရယူပြီးသားပါ', 'success');
+        } else {
+            showToast(`✅ +${reward} Coins ရပါပြီ!`, 'success');
+        }
+
+        // Dashboard is throttled below, so this no longer causes a query burst.
+        loadDashboard(true);
+
+    } catch (error) {
+        console.error('claimAdReward failed:', error);
+        // Keep the claim id so a retry after a transient/unknown network
+        // failure can safely resolve to the same Firestore transaction.
+        localStorage.setItem('pendingAdClaim', claimKey);
+        showToast('❌ မအောင်မြင်သေးပါ — Retry လုပ်နိုင်ပါတယ်', 'error');
+    } finally {
+        setTimeout(() => {
+            releaseCoinLock();
+            syncLocalTransactions();
+        }, 500);
+    }
 }
 
 async function saveAdWatchRecord(reward) {
-    try {
-        const today = new Date().toISOString().split('T')[0];
-        const recordId = currentUser.uid + '_' + today;
-        const recordRef = db.collection('adWatches').doc(recordId);
-        const recordDoc = await recordRef.get();
-        if (recordDoc.exists) {
-            await recordRef.update({
-                count: firebase.firestore.FieldValue.increment(1),
-                totalCoins: firebase.firestore.FieldValue.increment(reward),
-                username: userData.username || 'User', email: userData.email || '',
-                lastWatch: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        } else {
-            await recordRef.set({
-                userId: currentUser.uid, username: userData.username || 'User',
-                email: userData.email || '', date: today, count: 1, totalCoins: reward,
-                firstWatch: firebase.firestore.FieldValue.serverTimestamp(),
-                lastWatch: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        }
-    } catch (err) {}
+    // Kept for backward compatibility with older calls.
+    // Ad watch statistics are now written inside the same claim transaction,
+    // avoiding the previous read-then-update/read-then-set request pair.
+    return true;
 }
 
-// ============================================================
-//  DASHBOARD
-// ============================================================
-async function loadDashboard() {
-    if (!currentUser) return;
+let dashboardLoading = false;
+let lastDashboardLoadAt = 0;
+async function loadDashboard(force = false) {
+    if (!currentUser || dashboardLoading) return;
+    const now = Date.now();
+    if (!force && (now - lastDashboardLoadAt) < 30000) return;
+    dashboardLoading = true;
+    lastDashboardLoadAt = now;
     const topCard = document.getElementById('topViewerCard');
     const historyList = document.getElementById('adHistoryList');
     topCard.innerHTML = '<div class="dash-top-content"><div class="dash-rank">⏳</div><div class="dash-info"><div class="dash-name">Loading...</div></div></div>';
@@ -2222,35 +2578,35 @@ async function loadDashboard() {
         historyList.innerHTML = historyHtml;
     } catch (err) {
         topCard.innerHTML = '<div class="dash-top-content"><div class="dash-rank">❌</div><div class="dash-info"><div class="dash-name">Error</div></div></div>';
+    } finally {
+        dashboardLoading = false;
     }
 }
 
 async function claimTopBonus(amount) {
     if (!currentUser) return;
+
     const today = new Date().toISOString().split('T')[0];
-    const claimedKey = 'topBonusClaimed_' + today + '_' + currentUser.uid;
-    if (localStorage.getItem(claimedKey) === 'true') { showToast('❌ ရယူပြီးပါပြီ', 'error'); return; }
+    const claimId = 'top_bonus_' + currentUser.uid + '_' + today;
+
     if (!acquireCoinLock()) return;
+
     try {
-        const newCoins = (userData.coins || 0) + amount;
-        userData.coins = newCoins;
-        saveCoinsToLocal(newCoins);
-        updateUI();
-        try {
-            await db.collection('users').doc(currentUser.uid).update({ coins: firebase.firestore.FieldValue.increment(amount) });
-            await db.collection('transactions').add({ userId: currentUser.uid, type: 'top_viewer_bonus', amount, description: `Top Viewer Bonus`, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-        } catch (e) {}
-        localStorage.setItem(claimedKey, 'true');
-        showCoinAnimation(amount, newCoins);
-        showToast(`🎉 +${amount} Coins!`, 'success');
-        loadDashboard();
-    } catch (e) {}
-    finally { setTimeout(() => releaseCoinLock(), 1500); }
+        const result = await atomicCoinClaim(
+            claimId, amount, 'top_viewer_bonus', 'Top Viewer Bonus'
+        );
+        localStorage.setItem('topBonusClaimed_' + today + '_' + currentUser.uid, 'true');
+        showCoinAnimation(amount, result.newCoins);
+        showToast(result.duplicate ? '❌ ရယူပြီးပါပြီ' : `🎉 +${amount} Coins!`, 'success');
+        loadDashboard(true);
+    } catch (e) {
+        console.error('claimTopBonus failed:', e);
+        showToast('❌ မအောင်မြင်သေးပါ — ထပ်ကြိုးစားပါ', 'error');
+    } finally {
+        releaseCoinLock();
+    }
 }
 
-// ============================================================
-//  DAILY BONUS
-// ============================================================
 function updateDailyBonusUI() {
     const btn = document.getElementById('dailyBonusBtn');
     const cdEl = document.getElementById('dailyBonusCooldown');
@@ -2270,36 +2626,32 @@ function updateDailyBonusUI() {
 
 async function claimDailyBonus() {
     if (!currentUser) { showToast('❌ Please login', 'error'); return; }
-    const lastClaimKey = 'dailyBonus_' + currentUser.uid;
-    const lastClaim = parseInt(localStorage.getItem(lastClaimKey) || '0');
-    const now = Date.now();
-    const ONE_DAY = 24 * 60 * 60 * 1000;
-    if (lastClaim > 0 && (now - lastClaim) < ONE_DAY) { showToast('❌ ရယူပြီးပါပြီ', 'error'); return; }
-    if (!acquireCoinLock()) return;
+
+    const today = new Date().toISOString().split('T')[0];
+    const claimId = 'daily_' + currentUser.uid + '_' + today;
+
+    if (!acquireCoinLock()) { showToast('⏳ ခဏစောင့်ပြီး ထပ်လုပ်ပါ', 'warning'); return; }
+
     try {
-        const reward = 100;
-        userData.coins += reward;
-        saveCoinsToLocal(userData.coins);
-        updateUI();
-        try {
-            await db.collection('users').doc(currentUser.uid).update({ coins: firebase.firestore.FieldValue.increment(reward) });
-            await db.collection('transactions').add({ userId: currentUser.uid, type: 'daily_bonus', amount: reward, description: 'Daily Bonus', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-        } catch (e) {}
-        localStorage.setItem(lastClaimKey, now.toString());
+        const result = await atomicCoinClaim(
+            claimId, 100, 'daily_bonus', 'Daily Bonus'
+        );
+        localStorage.setItem('dailyBonus_' + currentUser.uid, Date.now().toString());
         updateDailyBonusUI();
-        showCoinAnimation(reward, userData.coins);
-        showToast('🎁 +100 Coins!', 'success');
-    } catch (e) {}
-    finally { releaseCoinLock(); }
+        showCoinAnimation(100, result.newCoins);
+        showToast(result.duplicate ? '✅ ရယူပြီးသားပါ' : '🎁 +100 Coins!', 'success');
+    } catch (e) {
+        console.error('claimDailyBonus failed:', e);
+        showToast('❌ မအောင်မြင်သေးပါ — ထပ်ကြိုးစားပါ', 'error');
+    } finally {
+        releaseCoinLock();
+    }
 }
 
-// ============================================================
-//  UI UPDATE
-// ============================================================
 function updateUI() {
-    const localCoins = getCoinsFromLocal();
-    if (localCoins !== null && !isUpdatingCoins) userData.coins = localCoins;
-    const coins = userData.coins || 0;
+    // Firestore is the source of truth for the coin balance.
+    // Do not overwrite a fresh Firestore value with stale localStorage data.
+    const coins = Number(userData.coins) || 0;
     const usdt = userData.usdt || 0;
     const username = userData.username || 'User';
     document.getElementById('totalCoins').textContent = coins;
@@ -2635,7 +2987,7 @@ auth.onAuthStateChanged(async (user) => {
         loadDashboard();
 
         setInterval(() => updateDailyBonusUI(), 60000);
-        setInterval(() => loadDashboard(), 60000);
+        setInterval(() => loadDashboard(), 300000);
         setInterval(() => saveCoinsToLocal(userData.coins), 60000);
     } else {
         currentUser = null;
