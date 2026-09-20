@@ -1617,13 +1617,13 @@ input,select,textarea{
 //  FIREBASE SETUP
 // ============================================================
 const firebaseConfig = {
-  apiKey: "AIzaSyDGV4bZIDTrT0zmNw8gZn1l9pTrpNIDgpo",
-  authDomain: "nova-373f4.firebaseapp.com",
-  projectId: "nova-373f4",
-  storageBucket: "nova-373f4.firebasestorage.app",
-  messagingSenderId: "305399539400",
-  appId: "1:305399539400:web:b62036af9ff90f970ce7fd",
-  measurementId: "G-ZR9V0YJXD7"
+    apiKey: "AIzaSyCObNT34Y2ZQF1Uncgq8OHB8ab9GQ4ejME",
+    authDomain: "watching-30fbd.firebaseapp.com",
+    projectId: "watching-30fbd",
+    storageBucket: "watching-30fbd.firebasestorage.app",
+    messagingSenderId: "806942164631",
+    appId: "1:806942164631:web:4bfd602ab9d750befb4bd2",
+    measurementId: "G-HB1TBD2T74"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -1746,15 +1746,6 @@ let currentAdClaimId = null;
 let isWithdrawOpen = localStorage.getItem('isWithdrawOpen') === 'true';
 let currentLeaderboardType = 'today';
 
-// Firestore listener/interval lifecycle guards.
-// Prevent duplicate listeners and repeated intervals after auth-state changes.
-let exchangeRateUnsubscribe = null;
-let userUnsubscribe = null;
-let dailyBonusInterval = null;
-let dashboardInterval = null;
-let localCoinsInterval = null;
-let initializedAuthUid = null;
-
 // ============================================================
 //  HELPERS
 // ============================================================
@@ -1806,12 +1797,9 @@ async function atomicCoinClaim(claimId, amount, type, description, extraUpdate =
             newCoins,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-
-        return { duplicate: false, newCoins };
-    });
-
-    try {
-        await db.collection('transactions').doc(claimId).set({
+        // Keep history in the same transaction so a successful claim does
+        // not trigger a second Firestore network request.
+        tx.set(db.collection('transactions').doc(claimId), {
             userId: currentUser.uid,
             type,
             amount: safeAmount,
@@ -1819,9 +1807,9 @@ async function atomicCoinClaim(claimId, amount, type, description, extraUpdate =
             claimId,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
-    } catch (e) {
-        saveTransactionLocal(type, safeAmount, description);
-    }
+
+        return { duplicate: false, newCoins };
+    });
 
     userData.coins = result.newCoins;
     saveCoinsToLocal(result.newCoins);
@@ -2159,17 +2147,14 @@ async function loadLeaderboard(type = 'today') {
             snap.forEach(doc => records.push({ userId: doc.data().userId, ...doc.data() }));
             records.sort((a, b) => (b.totalCoins || 0) - (a.totalCoins || 0));
             const top = records.slice(0, 30);
+            // adWatches already stores username, so do not issue one users/{uid}
+            // read per leaderboard row (the old N+1 pattern caused request spikes).
             for (const r of top) {
-                try {
-                    const uDoc = await db.collection('users').doc(r.userId).get();
-                    if (uDoc.exists) {
-                        users.push({
-                            uid: r.userId, name: uDoc.data().username || 'User',
-                            coins: r.totalCoins || 0, ads: r.count || 0,
-                            level: getLevelFromAds(uDoc.data().totalAds || 0)
-                        });
-                    }
-                } catch (e) {}
+                users.push({
+                    uid: r.userId, name: r.username || 'User',
+                    coins: r.totalCoins || 0, ads: r.count || 0,
+                    level: getLevelFromAds(r.totalAds || 0)
+                });
             }
         } else {
             const snap = await db.collection('users').orderBy('coins', 'desc').limit(30).get();
@@ -2397,17 +2382,6 @@ async function claimAdReward() {
 
     const card = { ...currentAdCard };
     const reward = Number(card.reward) || 0;
-
-    // Extra client-side cooldown. This prevents repeated taps/callbacks from
-    // creating multiple Firestore transaction attempts.
-    const claimCooldownKey = 'claimCooldown_' + currentUser.uid;
-    const lastClaimAt = Number(localStorage.getItem(claimCooldownKey) || 0);
-    if (Date.now() - lastClaimAt < 12000) {
-        releaseCoinLock();
-        showToast('⏳ ခဏစောင့်ပြီး ထပ်လုပ်ပါ', 'warning');
-        return;
-    }
-    localStorage.setItem(claimCooldownKey, String(Date.now()));
     const claimKey = currentAdClaimId || ('ad_' + currentUser.uid + '_' + card.id + '_' + Date.now());
 
     try {
@@ -2467,6 +2441,16 @@ async function claimAdReward() {
                 newAds,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
+            // Transaction history is written atomically with the claim instead
+            // of issuing another request after the transaction completes.
+            tx.set(db.collection('transactions').doc(claimKey), {
+                userId: currentUser.uid,
+                type: 'ad_watch',
+                amount: reward,
+                description: `${card.title} - ${reward} Coins`,
+                claimId: claimKey,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
 
             return { duplicate: false, newCoins, newAds };
         });
@@ -2477,20 +2461,6 @@ async function claimAdReward() {
         updateUI();
         updateLevelUI();
         updateAchievementsUI();
-
-        // History is best-effort and does not affect the idempotent coin claim.
-        try {
-            await db.collection('transactions').doc(claimKey).set({
-                userId: currentUser.uid,
-                type: 'ad_watch',
-                amount: reward,
-                description: `${card.title} - ${reward} Coins`,
-                claimId: claimKey,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
-        } catch (txErr) {
-            saveTransactionLocal('ad_watch', reward, card.title);
-        }
 
         localStorage.removeItem('pendingAdClaim');
         localStorage.setItem('adClaim_' + card.id + '_' + currentUser.uid, Date.now().toString());
@@ -2505,8 +2475,8 @@ async function claimAdReward() {
             showToast(`✅ +${reward} Coins ရပါပြီ!`, 'success');
         }
 
-        // Dashboard is throttled below, so this no longer causes a query burst.
-        loadDashboard(true);
+        // Do not re-query the whole daily dashboard after every claim.
+        // The periodic dashboard refresh will pick up the new totals.
 
     } catch (error) {
         console.error('claimAdReward failed:', error);
@@ -2517,6 +2487,7 @@ async function claimAdReward() {
     } finally {
         setTimeout(() => {
             releaseCoinLock();
+            syncLocalTransactions();
         }, 500);
     }
 }
@@ -2533,7 +2504,9 @@ let lastDashboardLoadAt = 0;
 async function loadDashboard(force = false) {
     if (!currentUser || dashboardLoading) return;
     const now = Date.now();
-    if (!force && (now - lastDashboardLoadAt) < 30000) return;
+    // Even a forced refresh cannot run more than once every 10 seconds.
+    // This protects Firestore from rapid taps and repeated UI callbacks.
+    if (now - lastDashboardLoadAt < (force ? 10000 : 30000)) return;
     dashboardLoading = true;
     lastDashboardLoadAt = now;
     const topCard = document.getElementById('topViewerCard');
@@ -2542,19 +2515,22 @@ async function loadDashboard(force = false) {
     historyList.innerHTML = '<div style="text-align:center;color:var(--text-3);font-size:12px;padding:12px;">Loading...</div>';
     try {
         const today = new Date().toISOString().split('T')[0];
-        const snapshot = await db.collection('adWatches').where('date', '==', today).get();
-        if (snapshot.empty) {
+        // Read only the current user's daily record and a small top list. The
+        // previous version downloaded every adWatches document on every refresh.
+        const myDoc = await db.collection('adWatches').doc(currentUser.uid + '_' + today).get();
+        const topSnap = await db.collection('adWatches').where('date', '==', today).limit(10).get();
+        const records = [];
+        topSnap.forEach(doc => records.push({ id: doc.id, ...doc.data() }));
+        records.sort((a, b) => (b.count || 0) - (a.count || 0));
+        const myRecord = myDoc.exists ? { id: myDoc.id, ...myDoc.data() } : null;
+        if (!myRecord && records.length === 0) {
             topCard.innerHTML = '<div class="dash-top-content"><div class="dash-rank">🎯</div><div class="dash-info"><div class="dash-name">ဒီနေ့ ဘယ်သူမှ မကြည့်ရသေးပါ</div></div></div>';
             historyList.innerHTML = '<div style="text-align:center;color:var(--text-3);font-size:12px;padding:12px;">No records yet</div>';
             return;
         }
-        const records = [];
-        snapshot.forEach(doc => records.push({ id: doc.id, ...doc.data() }));
-        records.sort((a, b) => (b.count || 0) - (a.count || 0));
-        const myRecord = records.find(r => r.userId === currentUser.uid);
         const myCount = myRecord ? (myRecord.count || 0) : 0;
-        const top = records[0];
-        const isMeTop = top.userId === currentUser.uid;
+        const top = records[0] || myRecord;
+        const isMeTop = top && top.userId === currentUser.uid;
         const progressPercent = Math.min((myCount / TOP_BONUS_TARGET) * 100, 100);
         const isComplete = myCount >= TOP_BONUS_TARGET;
         const bonusClaimedKey = 'topBonusClaimed_' + today + '_' + currentUser.uid;
@@ -2937,23 +2913,6 @@ function handleLogout() { auth.signOut(); showToast('👋 Logged out'); }
 // ============================================================
 auth.onAuthStateChanged(async (user) => {
     if (user) {
-        // Ignore duplicate auth callbacks for the same already-initialized user.
-        if (initializedAuthUid === user.uid) return;
-
-        // Clean up listeners/intervals from a previous auth session.
-        if (exchangeRateUnsubscribe) {
-            try { exchangeRateUnsubscribe(); } catch (e) {}
-            exchangeRateUnsubscribe = null;
-        }
-        if (userUnsubscribe) {
-            try { userUnsubscribe(); } catch (e) {}
-            userUnsubscribe = null;
-        }
-        if (dailyBonusInterval) clearInterval(dailyBonusInterval);
-        if (dashboardInterval) clearInterval(dashboardInterval);
-        if (localCoinsInterval) clearInterval(localCoinsInterval);
-
-        initializedAuthUid = user.uid;
         currentUser = user;
         document.getElementById('authScreen').classList.remove('active');
         document.getElementById('appContainer').classList.add('active');
@@ -2991,7 +2950,7 @@ auth.onAuthStateChanged(async (user) => {
         await loadAdLinksFromFirestore();
         await loadAppLinksFromFirestore();
 
-        exchangeRateUnsubscribe = db.collection('settings').doc('exchangeRate').onSnapshot((doc) => {
+        db.collection('settings').doc('exchangeRate').onSnapshot((doc) => {
             if (doc.exists) {
                 const data = doc.data();
                 exchangeRate = data.rate || 3000;
@@ -3002,7 +2961,7 @@ auth.onAuthStateChanged(async (user) => {
             }
         });
 
-        userUnsubscribe = db.collection('users').doc(user.uid).onSnapshot((doc) => {
+        db.collection('users').doc(user.uid).onSnapshot((doc) => {
             if (doc.exists) {
                 const d = doc.data();
                 userData.coins = d.coins || 0;
@@ -3022,33 +2981,10 @@ auth.onAuthStateChanged(async (user) => {
         updateDailyBonusUI();
         loadDashboard();
 
-        dailyBonusInterval = setInterval(() => updateDailyBonusUI(), 60000);
-        dashboardInterval = setInterval(() => loadDashboard(), 300000);
-        localCoinsInterval = setInterval(() => saveCoinsToLocal(userData.coins), 60000);
+        setInterval(() => updateDailyBonusUI(), 60000);
+        setInterval(() => loadDashboard(), 300000);
+        setInterval(() => saveCoinsToLocal(userData.coins), 60000);
     } else {
-        initializedAuthUid = null;
-
-        if (exchangeRateUnsubscribe) {
-            try { exchangeRateUnsubscribe(); } catch (e) {}
-            exchangeRateUnsubscribe = null;
-        }
-        if (userUnsubscribe) {
-            try { userUnsubscribe(); } catch (e) {}
-            userUnsubscribe = null;
-        }
-        if (dailyBonusInterval) {
-            clearInterval(dailyBonusInterval);
-            dailyBonusInterval = null;
-        }
-        if (dashboardInterval) {
-            clearInterval(dashboardInterval);
-            dashboardInterval = null;
-        }
-        if (localCoinsInterval) {
-            clearInterval(localCoinsInterval);
-            localCoinsInterval = null;
-        }
-
         currentUser = null;
         document.getElementById('authScreen').classList.add('active');
         document.getElementById('appContainer').classList.remove('active');
@@ -3100,17 +3036,34 @@ function saveTransactionLocal(type, amount, description) {
         localStorage.setItem('localTx_' + currentUser.uid, JSON.stringify(tx));
     } catch (e) {}
 }
-async function syncLocalTransactions() {
-    if (!currentUser) return;
+let localTxSyncInFlight = false;
+let lastLocalTxSyncAt = 0;
+async function syncLocalTransactions(force = false) {
+    if (!currentUser || localTxSyncInFlight) return;
+    const now = Date.now();
+    if (!force && now - lastLocalTxSyncAt < 30000) return;
+    localTxSyncInFlight = true;
+    lastLocalTxSyncAt = now;
     try {
         const tx = JSON.parse(localStorage.getItem('localTx_' + currentUser.uid) || '[]');
-        const unsynced = tx.filter(t => !t.synced);
-        for (const t of unsynced) {
-            try { await db.collection('transactions').add({ userId: currentUser.uid, type: t.type, amount: t.amount, description: t.description, timestamp: new Date(t.timestamp) }); t.synced = true; }
-            catch (e) { if (e.code === 'resource-exhausted') break; }
-        }
+        const unsynced = tx.filter(t => !t.synced).slice(0, 400);
+        if (!unsynced.length) return;
+        const batch = db.batch();
+        unsynced.forEach((t, i) => {
+            const ref = db.collection('transactions').doc(
+                'local_' + currentUser.uid + '_' + t.timestamp + '_' + i
+            );
+            batch.set(ref, { userId: currentUser.uid, type: t.type, amount: t.amount, description: t.description, timestamp: new Date(t.timestamp) }, { merge: true });
+        });
+        await batch.commit();
+        unsynced.forEach(t => { t.synced = true; });
         localStorage.setItem('localTx_' + currentUser.uid, JSON.stringify(tx));
-    } catch (e) {}
+    } catch (e) {
+        // Leave the local queue intact; a later sync can retry without creating
+        // a burst of individual requests.
+    } finally {
+        localTxSyncInFlight = false;
+    }
 }
 
 // ============================================================
